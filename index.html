@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemBuilder: Sec 3 G2 Ionic Formulae</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- KaTeX CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for in-browser JSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes bounceShort { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-short { animation: bounceShort 0.5s ease-in-out; }
+        
+        /* Hide number input arrows for cleaner subscript look */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    
+    <div id="root" class="flex-grow flex flex-col"></div>
+
+    <script type="text/babel" data-type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const { useState, useEffect, useRef } = React;
+
+        // --- Custom SVG Icons ---
+        const Icon = ({ path, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} dangerouslySetInnerHTML={{ __html: path }} />
+        );
+        const BeakerIcon = (p) => <Icon {...p} path='<path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M14 9h4"/>' />;
+        const ArrowRightIcon = (p) => <Icon {...p} path='<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>' />;
+        const CheckCircleIcon = (p) => <Icon {...p} path='<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>' />;
+        const LightbulbIcon = (p) => <Icon {...p} path='<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>' />;
+        const MessageSquareIcon = (p) => <Icon {...p} path='<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' />;
+        const ShieldAlertIcon = (p) => <Icon {...p} path='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>' />;
+        const BookOpenIcon = (p) => <Icon {...p} path='<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' />;
+        const RefreshCwIcon = (p) => <Icon {...p} path='<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>' />;
+        const EyeIcon = (p) => <Icon {...p} path='<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>' />;
+        const CopyIcon = (p) => <Icon {...p} path='<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>' />;
+        const XIcon = (p) => <Icon {...p} path='<path d="M18 6 6 18"/><path d="m6 6 12 12"/>' />;
+        const TargetIcon = (p) => <Icon {...p} path='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>' />;
+        const TrashIcon = (p) => <Icon {...p} path='<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>' />;
+
+        // ======================================================
+        // 🔥 YOUR FIREBASE CONFIG (Retained!) 🔥
+        // ======================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRO8liDHigDRzV0jpHn3c4SmDlC-l3qLc",
+            authDomain: "chem-detective-2026.firebaseapp.com",
+            projectId: "chem-detective-2026",
+            storageBucket: "chem-detective-2026.firebasestorage.app",
+            messagingSenderId: "477655926627",
+            appId: "1:477655926627:web:2a7d12a0163b54af5ab556"
+        };
+        // ======================================================
+
+        const isLiveMode = !!firebaseConfig.apiKey;
+        let app, auth, db;
+
+        if (isLiveMode) {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        }
+
+        const CATIONS = [
+          { symbol: 'Na', charge: 1, name: 'Sodium' },
+          { symbol: 'K', charge: 1, name: 'Potassium' },
+          { symbol: 'Mg', charge: 2, name: 'Magnesium' },
+          { symbol: 'Ca', charge: 2, name: 'Calcium' },
+          { symbol: 'Al', charge: 3, name: 'Aluminium' },
+        ];
+
+        const ANIONS = [
+          { symbol: 'Cl', charge: 1, name: 'Chloride', isPoly: false },
+          { symbol: 'O', charge: 2, name: 'Oxide', isPoly: false },
+          { symbol: 'N', charge: 3, name: 'Nitride', isPoly: false },
+          { symbol: 'NO3', charge: 1, name: 'Nitrate', isPoly: true },
+          { symbol: 'SO4', charge: 2, name: 'Sulfate', isPoly: true },
+          { symbol: 'OH', charge: 1, name: 'Hydroxide', isPoly: true },
+        ];
+
+        const Latex = ({ children }) => {
+          const containerRef = useRef(null);
+          useEffect(() => {
+            if (window.katex && containerRef.current && children) {
+              window.katex.render(children.toString(), containerRef.current, { throwOnError: false });
+            }
+          }, [children]);
+          return <span ref={containerRef} className="inline-block">{children}</span>;
+        };
+
+        const formatIonLatex = (ion, isCation, crossStep = 0) => {
+          let sym = `\\mathrm{${ion.symbol.replace(/(\d+)/g, '_{$1}')}}`;
+          let chargeColor = isCation ? '#fbbf24' : '#38bdf8'; 
+          let sign = isCation ? '+' : '-';
+          let chargeNum = ion.charge;
+          if (ion.charge === 1 && crossStep >= 1) chargeNum = '1';
+          else if (ion.charge === 1 && crossStep === 0) chargeNum = '';
+          let coloredNum = (crossStep >= 1 && chargeNum !== '') ? `\\textcolor{${chargeColor}}{${chargeNum}}` : chargeNum;
+          return `${sym}^{${coloredNum}${sign}}`;
+        };
+
+        const formatFormulaLatex = (cat, an, catSub, anSub) => {
+          const cSym = `\\mathrm{${cat.symbol.replace(/(\d+)/g, '_{$1}')}}`;
+          const aSym = `\\mathrm{${an.symbol.replace(/(\d+)/g, '_{$1}')}}`;
+          let cPart = cat.isPoly && catSub > 1 ? `\\left(${cSym}\\right)` : cSym;
+          let aPart = an.isPoly && anSub > 1 ? `\\left(${aSym}\\right)` : aSym;
+          let cSubStr = catSub > 1 ? `_{\\textcolor{#38bdf8}{${catSub}}}` : '';
+          let aSubStr = anSub > 1 ? `_{\\textcolor{#fbbf24}{${anSub}}}` : '';
+          return `${cPart}${cSubStr}${aPart}${aSubStr}`;
+        };
+
+        function App() {
+          const [currentStep, setCurrentStep] = useState(0);
+          const [user, setUser] = useState(null);
+          const [studentName, setStudentName] = useState("");
+          const [showTeacherView, setShowTeacherView] = useState(false);
+
+          useEffect(() => {
+            if (!isLiveMode) return;
+            const initAuth = async () => {
+              try { await signInAnonymously(auth); } catch (e) { console.error(e); }
+            };
+            initAuth();
+            const unsubscribe = onAuthStateChanged(auth, setUser);
+            return () => unsubscribe();
+          }, []);
+
+          const submitResponse = async (phaseTitle, text) => {
+            if (!studentName.trim() || !isLiveMode || !db) return;
+            try {
+              await addDoc(collection(db, 'studentResponses'), {
+                studentName, phase: phaseTitle, text, timestamp: Date.now()
+              });
+            } catch (e) { console.error(e); }
+          };
+
+          const steps = [
+            { component: <IntroScreen studentName={studentName} setStudentName={setStudentName} onNext={() => setCurrentStep(1)} /> },
+            { component: <CrissCrossScreen onNext={() => setCurrentStep(2)} /> },
+            { component: <DebateScreen onNext={() => setCurrentStep(3)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
+            { component: <ContextScreen onNext={() => setCurrentStep(4)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
+            { component: <PracticeScreen onNext={() => setCurrentStep(5)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
+            { component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} /> },
+          ];
+
+          if (showTeacherView) return <TeacherDashboard onClose={() => setShowTeacherView(false)} user={user} />;
+
+          return (
+            <div className="flex-grow flex flex-col w-full font-sans text-slate-800">
+              <header className="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-10 w-full">
+                <div className="max-w-4xl mx-auto flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <BeakerIcon size={24} />
+                    <h1 className="text-xl font-bold tracking-wide">ChemBuilder: Sec 3 G2</h1>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setShowTeacherView(true)} className="text-indigo-200 hover:text-white transition-colors" title="Teacher Dashboard"><EyeIcon size={20} /></button>
+                    <div className="text-xs font-bold bg-indigo-700 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-inner">Phase {currentStep + 1} / {steps.length}</div>
+                  </div>
+                </div>
+              </header>
+              <main className="max-w-4xl mx-auto p-4 md:p-8 flex-grow w-full">
+                <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6 md:p-10">{steps[currentStep].component}</div>
+              </main>
+              <footer className="text-center py-6 text-slate-400 text-sm font-medium">
+                ChemBuilder &copy; {new Date().getFullYear()} &mdash; E21CC Science Interactive
+              </footer>
+            </div>
+          );
+        }
+
+        function IntroScreen({ studentName, setStudentName, onNext }) {
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center gap-3 text-indigo-600"><BookOpenIcon size={32} /><h2 className="text-3xl font-extrabold">Charges from the Periodic Table</h2></div>
+              <p className="text-slate-600">The Group number tells us how many valence electrons an element has, which determines the charge of its ion.</p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-center shadow-sm">
+                  <div className="font-bold text-red-800 mb-1">Group 1</div>
+                  <div className="text-xs text-red-600 mb-2 h-8">Loses 1 valence <Latex>{"e^-"}</Latex></div>
+                  <div className="text-3xl font-black text-red-600 mb-1"><Latex>+1</Latex></div>
+                  <div className="text-xs text-slate-500 border-t border-red-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Na}^+, \\mathrm{K}^+"}</Latex></div>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 p-4 rounded-xl text-center shadow-sm">
+                  <div className="font-bold text-orange-800 mb-1">Group 2</div>
+                  <div className="text-xs text-orange-600 mb-2 h-8">Loses 2 valence <Latex>{"e^-"}</Latex></div>
+                  <div className="text-3xl font-black text-orange-600 mb-1"><Latex>+2</Latex></div>
+                  <div className="text-xs text-slate-500 border-t border-orange-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Mg}^{2+}, \\mathrm{Ca}^{2+}"}</Latex></div>
+                </div>
+                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-center shadow-sm">
+                  <div className="font-bold text-yellow-800 mb-1">Group 13 <span className="text-xs">(III)</span></div>
+                  <div className="text-xs text-yellow-700 mb-2 h-8">Loses 3 valence <Latex>{"e^-"}</Latex></div>
+                  <div className="text-3xl font-black text-yellow-600 mb-1"><Latex>+3</Latex></div>
+                  <div className="text-xs text-slate-500 border-t border-yellow-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Al}^{3+}"}</Latex></div>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl text-center shadow-sm">
+                  <div className="font-bold text-blue-800 mb-1">Group 16 <span className="text-xs">(VI)</span></div>
+                  <div className="text-xs text-blue-600 mb-2 h-8">Gains 2 <Latex>{"e^-"}</Latex> to be full</div>
+                  <div className="text-3xl font-black text-blue-600 mb-1"><Latex>-2</Latex></div>
+                  <div className="text-xs text-slate-500 border-t border-blue-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{O}^{2-}, \\mathrm{S}^{2-}"}</Latex></div>
+                </div>
+                <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-center shadow-sm">
+                  <div className="font-bold text-indigo-800 mb-1">Group 17 <span className="text-xs">(VII)</span></div>
+                  <div className="text-xs text-indigo-600 mb-2 h-8">Gains 1 <Latex>{"e^-"}</Latex> to be full</div>
+                  <div className="text-3xl font-black text-indigo-600 mb-1"><Latex>-1</Latex></div>
+                  <div className="text-xs text-slate-500 border-t border-indigo-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Cl}^-, \\mathrm{F}^-"}</Latex></div>
+                </div>
+              </div>
+
+              <div className="bg-indigo-50 border border-indigo-200 p-6 rounded-xl mt-8">
+                <h3 className="font-bold text-indigo-800 mb-3">Identify Yourself</h3>
+                <input 
+                  type="text" 
+                  placeholder="Your Name" 
+                  className="w-full p-3 border border-indigo-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" 
+                  value={studentName} 
+                  onChange={(e) => setStudentName(e.target.value)} 
+                  onKeyDown={(e) => { if(e.key === 'Enter' && studentName.trim()) onNext(); }}
+                />
+              </div>
+              <div className="flex justify-end pt-4">
+                <button onClick={onNext} disabled={!studentName.trim()} className={`font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-all ${studentName.trim() ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transform hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Start Detective Work <ArrowRightIcon size={20} /></button>
+              </div>
+            </div>
+          );
+        }
+
+        function CrissCrossScreen({ onNext }) {
+          const [catIdx, setCatIdx] = useState(2);
+          const [anIdx, setAnIdx] = useState(1);
+          const [crossStep, setCrossStep] = useState(0);
+          const cation = CATIONS[catIdx];
+          const anion = ANIONS[anIdx];
+          const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+          const factor = gcd(cation.charge, anion.charge);
+          const finalCatSub = anion.charge / factor;
+          const finalAnSub = cation.charge / factor;
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-2xl font-bold border-b pb-2 text-slate-800">The Formulae Detective</h2>
+              <div className="flex gap-4 justify-center">
+                <select className="p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-medium" value={catIdx} onChange={(e) => { setCatIdx(Number(e.target.value)); setCrossStep(0); }}>
+                  {CATIONS.map((c, i) => <option key={i} value={i}>{c.name} ({c.charge}+)</option>)}
+                </select>
+                <select className="p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-medium" value={anIdx} onChange={(e) => { setAnIdx(Number(e.target.value)); setCrossStep(0); }}>
+                  {ANIONS.map((a, i) => <option key={i} value={i}>{a.name} ({a.charge}-)</option>)}
+                </select>
+              </div>
+              <div className="bg-slate-800 rounded-2xl p-12 text-white relative flex flex-col items-center justify-center min-h-[300px] shadow-inner">
+                <div className={`flex gap-16 text-5xl transition-all ${crossStep > 0 ? 'mb-16' : ''}`}>
+                  <Latex>{formatIonLatex(cation, true, crossStep)}</Latex>
+                  <Latex>{formatIonLatex(anion, false, crossStep)}</Latex>
+                </div>
+                {crossStep >= 2 && (
+                  <svg viewBox="0 0 460 160" className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[460px] h-[160px] pointer-events-none opacity-90">
+                    <defs>
+                        <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#fbbf24" /></marker>
+                        <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#38bdf8" /></marker>
+                    </defs>
+                    <path d="M 185,20 C 200,90 280,70 280,135" stroke="#fbbf24" strokeWidth="3" strokeDasharray="5,5" fill="none" markerEnd="url(#a1)"/>
+                    <path d="M 325,20 C 310,90 230,70 230,135" stroke="#38bdf8" strokeWidth="3" strokeDasharray="5,5" fill="none" markerEnd="url(#a2)"/>
+                  </svg>
+                )}
+                {crossStep >= 3 && <div className="text-5xl mt-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700 shadow-md"><Latex>{formatFormulaLatex(cation, anion, finalCatSub, finalAnSub)}</Latex></div>}
+              </div>
+              <div className="flex justify-center"><button onClick={() => setCrossStep((crossStep + 1) % 4)} className="bg-yellow-500 hover:bg-yellow-600 font-bold py-3 px-8 rounded-full flex items-center gap-2 shadow-lg transition-transform active:scale-95"><RefreshCwIcon size={20}/> {crossStep === 0 ? "Show Valency" : crossStep === 1 ? "Criss-Cross!" : crossStep === 2 ? "Final Formula" : "Reset"}</button></div>
+              <div className="flex justify-end pt-8 border-t mt-8"><button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold py-2 px-6 rounded-lg shadow-md">Next Phase</button></div>
+            </div>
+          );
+        }
+
+        function DebateScreen({ onNext, submitResponse }) {
+          const [response, setResponse] = useState("");
+          const [submitted, setSubmitted] = useState(false);
+          
+          const canSubmit = response.trim().length > 5;
+          
+          const executeSubmit = () => {
+              if (canSubmit) {
+                  setSubmitted(true);
+                  submitResponse(response);
+              }
+          };
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-2xl font-bold text-slate-800">The Chemist's Debate: <Latex>{"\\mathrm{MgO}"}</Latex></h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"Criss-cross gives <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>!" - Sarah</div>
+                <div className="bg-green-50 border border-green-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"Wait, we need the simplest ratio! It's <Latex>{"\\mathrm{MgO}"}</Latex>." - Tom</div>
+              </div>
+              <textarea 
+                  className="w-full p-4 border border-slate-300 rounded-lg h-32 outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" 
+                  placeholder="Evaluate the reasoning..." 
+                  value={response} 
+                  onChange={(e) => setResponse(e.target.value)} 
+                  onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); executeSubmit(); } }}
+                  disabled={submitted}
+              ></textarea>
+              
+              {!submitted ? (
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <button 
+                        onClick={executeSubmit} 
+                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto ${canSubmit ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
+                        disabled={!canSubmit}
+                    >
+                        Submit Reasoning
+                    </button>
+                    {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Please type at least 6 characters to explain your reasoning!</span>}
+                </div>
+              ) : (
+                <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-sm text-green-900 animate-fade-in"><strong className="flex items-center gap-2 mb-1"><CheckCircleIcon size={16}/> Correct Viewpoint:</strong> Tom wins. Ionic formulas show the empirical (simplest) ratio.</div>
+              )}
+              <div className="flex justify-end"><button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Next Phase</button></div>
+            </div>
+          );
+        }
+
+        function ContextScreen({ onNext, submitResponse }) {
+          const [response, setResponse] = useState("");
+          const [submitted, setSubmitted] = useState(false);
+          
+          const canSubmit = response.trim().length > 5;
+          
+          const executeSubmit = () => {
+              if (canSubmit) {
+                  setSubmitted(true);
+                  submitResponse(response);
+              }
+          };
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-2xl font-bold text-slate-800">Polyatomic Context: <Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></h2>
+              <p className="text-slate-600">Why do we need brackets for Nitrate but not for Chloride?</p>
+              <textarea 
+                  className="w-full p-4 border border-slate-300 rounded-lg h-32 outline-none focus:ring-2 focus:ring-teal-500 transition-shadow" 
+                  placeholder="Explain your analysis..."
+                  value={response} 
+                  onChange={(e) => setResponse(e.target.value)} 
+                  onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); executeSubmit(); } }}
+                  disabled={submitted}
+              ></textarea>
+              
+              {!submitted ? (
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <button 
+                        onClick={executeSubmit} 
+                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto ${canSubmit ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
+                        disabled={!canSubmit}
+                    >
+                        Submit Analysis
+                    </button>
+                    {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Elaborate a bit more! (Min 6 chars)</span>}
+                </div>
+              ) : (
+                 <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg text-sm text-teal-900 animate-fade-in"><strong className="flex items-center gap-2 mb-1"><CheckCircleIcon size={16}/> Teacher's Note:</strong> Nitrate is a single entity containing multiple atoms. Brackets show the entire group is multiplied.</div>
+              )}
+              <div className="flex justify-end"><button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Proceed to Practice</button></div>
+            </div>
+          );
+        }
+
+        // --- PHASE 5: SUBSCRIPT PRACTICE ---
+        function PracticeScreen({ onNext, submitResponse }) {
+          const questions = [
+            { cat: CATIONS[0] /* Na */, an: ANIONS[0] /* Cl */, expC: 1, expA: 1 },
+            { cat: CATIONS[2] /* Mg */, an: ANIONS[0] /* Cl */, expC: 1, expA: 2 },
+            { cat: CATIONS[2] /* Mg */, an: ANIONS[1] /* O */,  expC: 1, expA: 1 },
+            { cat: CATIONS[4] /* Al */, an: ANIONS[1] /* O */,  expC: 2, expA: 3 },
+            { cat: CATIONS[3] /* Ca */, an: ANIONS[3] /* NO3 */, expC: 1, expA: 2 }
+          ];
+
+          const [qIdx, setQIdx] = useState(0);
+          const [cSub, setCSub] = useState(1);
+          const [aSub, setASub] = useState(1);
+          const [feedback, setFeedback] = useState(null);
+
+          const currentQ = questions[qIdx];
+
+          const handleCheck = () => {
+            if (cSub === currentQ.expC && aSub === currentQ.expA) {
+              setFeedback('correct');
+              setTimeout(() => {
+                if (qIdx < questions.length - 1) {
+                  setQIdx(qIdx + 1);
+                  setCSub(1);
+                  setASub(1);
+                  setFeedback(null);
+                } else {
+                  setFeedback('finished');
+                  submitResponse(`Scored 5/5 on the Subscript Challenge!`);
+                }
+              }, 1500);
+            } else {
+              setFeedback('wrong');
+              setTimeout(() => setFeedback(null), 2000);
+            }
+          };
+
+          const renderCatSymbol = () => {
+            let sym = `\\mathrm{${currentQ.cat.symbol.replace(/(\d+)/g, '_{$1}')}}`;
+            if (currentQ.cat.isPoly && cSub > 1) return `\\left(${sym}\\right)`;
+            return sym;
+          };
+          const renderAnSymbol = () => {
+            let sym = `\\mathrm{${currentQ.an.symbol.replace(/(\d+)/g, '_{$1}')}}`;
+            if (currentQ.an.isPoly && aSub > 1) return `\\left(${sym}\\right)`;
+            return sym;
+          };
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                <div className="flex items-center gap-2 text-indigo-700">
+                  <TargetIcon size={28} />
+                  <h2 className="text-2xl font-bold">The Subscript Challenge</h2>
+                </div>
+                <div className="font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full text-sm">Question {qIdx + 1} of {questions.length}</div>
+              </div>
+              
+              <p className="text-slate-600">Select the correct subscripts to balance the charges for this compound.</p>
+
+              <div className="bg-slate-100 rounded-2xl p-8 border border-slate-200 mt-6 text-center shadow-sm">
+                
+                {/* The Ions */}
+                <div className="flex justify-center gap-12 text-3xl mb-8 opacity-80 font-medium">
+                   <Latex>{formatIonLatex(currentQ.cat, true)}</Latex>
+                   <Latex>+</Latex>
+                   <Latex>{formatIonLatex(currentQ.an, false)}</Latex>
+                </div>
+
+                {/* The Interactive Formula Builder */}
+                <div className="flex justify-center items-end text-5xl font-bold font-serif mb-8 bg-white p-6 rounded-xl shadow-inner inline-flex border border-slate-200">
+                   <div className="text-slate-800"><Latex>{renderCatSymbol()}</Latex></div>
+                   <select 
+                      className={`text-2xl border-2 rounded p-1 mx-1 outline-none text-blue-600 font-sans cursor-pointer transition-colors ${cSub > 1 ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-transparent text-transparent hover:text-blue-400'}`}
+                      value={cSub} 
+                      onChange={(e)=>setCSub(Number(e.target.value))}
+                    >
+                     {[1,2,3,4].map(n => <option key={n} value={n} className="text-slate-800">{n === 1 ? '1 (Hide)' : n}</option>)}
+                   </select>
+                   
+                   <div className="text-slate-800"><Latex>{renderAnSymbol()}</Latex></div>
+                   <select 
+                      className={`text-2xl border-2 rounded p-1 mx-1 outline-none text-yellow-600 font-sans cursor-pointer transition-colors ${aSub > 1 ? 'border-yellow-400 bg-yellow-50' : 'border-slate-200 bg-transparent text-transparent hover:text-yellow-400'}`}
+                      value={aSub} 
+                      onChange={(e)=>setASub(Number(e.target.value))}
+                    >
+                     {[1,2,3,4].map(n => <option key={n} value={n} className="text-slate-800">{n === 1 ? '1 (Hide)' : n}</option>)}
+                   </select>
+                </div>
+
+                {/* Feedback & Actions */}
+                <div className="h-16 flex items-center justify-center">
+                  {feedback === 'correct' && <div className="text-green-600 font-bold text-xl flex items-center gap-2 animate-bounce-short"><CheckCircleIcon /> Perfect Balance!</div>}
+                  {feedback === 'wrong' && <div className="text-rose-600 font-bold flex items-center gap-2 animate-pulse"><ShieldAlertIcon /> Charges don't cancel to zero. Try again!</div>}
+                  {feedback === 'finished' && <div className="text-indigo-600 font-bold text-xl">Challenge Complete!</div>}
+                  
+                  {!feedback && (
+                    <button onClick={handleCheck} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-md transition-transform active:scale-95">
+                      Check Formula
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {feedback === 'finished' && (
+                 <div className="flex justify-end pt-4 animate-fade-in"><button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors">Complete Lesson</button></div>
+              )}
+            </div>
+          );
+        }
+
+        // --- Phase 6: Summary Screen ---
+        function SummaryScreen({ onReset }) {
+          return (
+            <div className="text-center py-12 space-y-6 animate-fade-in">
+              <div className="bg-green-100 p-6 rounded-full inline-block shadow-inner"><CheckCircleIcon size={80} className="text-green-500 mx-auto"/></div>
+              <h2 className="text-4xl font-extrabold text-slate-800">Lesson Complete!</h2>
+              <p className="text-slate-600 text-lg max-w-md mx-auto">You have successfully used evidence to determine ionic formulae and adapted to new contexts. Outstanding work, Detective.</p>
+              <div className="pt-8"><button onClick={onReset} className="bg-slate-800 hover:bg-slate-900 transition-colors text-white font-bold py-3 px-10 rounded-full shadow-lg">Restart Lesson</button></div>
+            </div>
+          );
+        }
+
+        function TeacherDashboard({ onClose, user }) {
+          const [res, setRes] = useState([]);
+          
+          useEffect(() => {
+            if (!isLiveMode || !user) return;
+            return onSnapshot(collection(db, 'studentResponses'), s => {
+                const data = s.docs.map(d => ({id: d.id, ...d.data()}));
+                setRes(data.sort((a,b) => b.timestamp - a.timestamp));
+            });
+          }, [user]);
+
+          // NEW LOGIC: Clear All Data Function
+          const handleClearAll = async () => {
+              if (!db) return;
+              const confirmClear = window.confirm("Are you sure you want to permanently delete ALL student responses? This cannot be undone.");
+              if (!confirmClear) return;
+              
+              try {
+                  const deletePromises = res.map(r => deleteDoc(doc(db, 'studentResponses', r.id)));
+                  await Promise.all(deletePromises);
+              } catch (e) {
+                  console.error("Error clearing dashboard: ", e);
+                  alert("Something went wrong while clearing data. Please check the console.");
+              }
+          };
+
+          return (
+            <div className="min-h-screen bg-slate-900 text-white p-8 font-sans">
+              <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-700 pb-4 gap-4">
+                <h1 className="text-3xl font-bold flex items-center gap-3 text-indigo-400"><EyeIcon size={32}/> Live Student Responses</h1>
+                <div className="flex items-center gap-3">
+                    <button onClick={handleClearAll} className="bg-rose-900/40 hover:bg-rose-800 transition-colors text-rose-200 border border-rose-700/50 px-4 py-2 rounded-lg font-bold shadow-sm flex items-center gap-2">
+                        <TrashIcon size={18} /> Clear Data
+                    </button>
+                    <button onClick={onClose} className="bg-indigo-600 hover:bg-indigo-700 transition-colors px-6 py-2 rounded-lg font-bold shadow-md">Close Dashboard</button>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                {res.map(r => (
+                  <div key={r.id} className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                    <div className="flex justify-between items-start mb-2">
+                       <strong className="text-xl">{r.studentName}</strong>
+                       <span className="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded">{new Date(r.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <span className="inline-block px-3 py-1 bg-indigo-900/50 text-indigo-300 text-xs font-semibold rounded-full mb-4 uppercase tracking-wider">{r.phase}</span>
+                    <p className="mt-2 text-slate-300 italic border-l-2 border-slate-600 pl-4 leading-relaxed">"{r.text}"</p>
+                  </div>
+                ))}
+                {res.length === 0 && (
+                   <div className="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-4">
+                      <RefreshCwIcon size={48} className="animate-spin text-slate-700" />
+                      <p className="text-xl font-medium">Dashboard active. Waiting for student submissions...</p>
+                   </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
