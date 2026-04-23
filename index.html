@@ -33,12 +33,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col">
     
-    <!-- 
-      TAILWIND SAFELIST: 
-      This hidden div forces the Tailwind CDN to generate these colors on page load.
-      It completely bypasses the bug where React injects classes too late for the CDN to notice them.
-      Cost to implement: $0. Toxic Tax: $0.
-    -->
+    <!-- TAILWIND SAFELIST -->
     <div style="display: none;" class="bg-red-50 border-red-200 text-red-800 text-red-600 bg-orange-50 border-orange-200 text-orange-800 text-orange-600 bg-yellow-50 border-yellow-200 text-yellow-800 text-yellow-600 bg-blue-50 border-blue-200 text-blue-800 text-blue-600 bg-indigo-50 border-indigo-200 text-indigo-800 text-indigo-600 bg-green-50 border-green-200 text-green-900 bg-teal-50 border-teal-200 text-teal-900 hover:bg-indigo-700 bg-indigo-600 text-rose-500 bg-rose-600 hover:bg-rose-700 border-rose-700 bg-rose-900/40 text-rose-200 bg-slate-100 bg-slate-200 bg-slate-300 bg-slate-800 bg-slate-900 text-white text-slate-400 text-slate-500 text-slate-600 text-slate-700 text-slate-800 border-slate-200 border-slate-300 border-slate-700"></div>
 
     <div id="root" class="flex-grow flex flex-col"></div>
@@ -252,7 +247,6 @@
                   className="w-full p-3 border border-indigo-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" 
                   value={studentName} 
                   onChange={(e) => setStudentName(e.target.value)} 
-                  onKeyDown={(e) => { if(e.key === 'Enter' && studentName.trim()) onNext(); }}
                 />
               </div>
               <div className="flex justify-end pt-4">
@@ -314,7 +308,7 @@
           const [response, setResponse] = useState("");
           const [submitted, setSubmitted] = useState(false);
           
-          const canSubmit = response.trim().length > 5;
+          const canSubmit = response.trim().length >= 50;
           
           const executeSubmit = () => {
               if (canSubmit) {
@@ -325,17 +319,26 @@
 
           return (
             <div className="space-y-6 animate-fade-in">
-              <h2 className="text-2xl font-bold text-slate-800">The Chemist's Debate: <Latex>{"\\mathrm{MgO}"}</Latex></h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-purple-100 text-purple-900 text-sm font-bold px-4 py-3 rounded-xl border border-purple-200 shadow-sm leading-relaxed">
+                E21CC: The student can use evidence and adopt different viewpoints to explain their reasoning and decisions.
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800">The Chemist's Debate: Magnesium Oxide</h2>
+              
+              <div className="bg-indigo-50 p-5 rounded-xl border border-indigo-100 text-indigo-900 shadow-sm">
+                <p>You are presented with The Chemist's Debate, where two students, Sarah and Tom, are arguing what the correct formula for Magnesium Oxide is. Their perspectives are shown below.</p>
+                <p className="mt-2 font-bold">Evaluate each of their perspectives, stating clearly what is correct or incorrect about each of their ideas.</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mt-2">
                 <div className="bg-red-50 border border-red-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"Criss-cross gives <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>!" - Sarah</div>
                 <div className="bg-green-50 border border-green-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"Wait, we need the simplest ratio! It's <Latex>{"\\mathrm{MgO}"}</Latex>." - Tom</div>
               </div>
+              
               <textarea 
-                  className="w-full p-4 border border-slate-300 rounded-lg h-32 outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" 
+                  className="w-full p-4 border border-slate-300 rounded-lg h-32 outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow mt-4" 
                   placeholder="Evaluate the reasoning..." 
                   value={response} 
                   onChange={(e) => setResponse(e.target.value)} 
-                  onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); executeSubmit(); } }}
                   disabled={submitted}
               ></textarea>
               
@@ -348,10 +351,18 @@
                     >
                         Submit Reasoning
                     </button>
-                    {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Please type at least 6 characters to explain your reasoning!</span>}
+                    {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Please type at least 50 characters to explain your reasoning! ({response.trim().length}/50)</span>}
                 </div>
               ) : (
-                <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-sm text-green-900 animate-fade-in"><strong className="flex items-center gap-2 mb-1"><CheckCircleIcon size={16}/> Correct Viewpoint:</strong> Tom wins. Ionic formulas show the empirical (simplest) ratio.</div>
+                <div className="bg-green-50 border border-green-200 p-5 rounded-lg text-sm text-green-900 animate-fade-in shadow-sm">
+                  <h4 className="font-bold flex items-center gap-2 mb-2 text-green-800"><CheckCircleIcon size={18}/> Teacher's Evaluation</h4>
+                  <p className="mb-3">
+                    <strong>Tom is correct.</strong> Ionic compounds form giant lattice structures, so their chemical formulae must represent the simplest whole-number ratio of ions. Just like how you simplify a ratio of 2:2 to 1:1 in mathematics, the ratio of Magnesium to Oxide ions must be simplified to 1:1, giving <strong><Latex>{"\\mathrm{MgO}"}</Latex></strong>.
+                  </p>
+                  <p>
+                    <strong>Why Sarah is wrong:</strong> Sarah treated the criss-cross method as an unbreakable rule rather than a mathematical shortcut. By blindly crossing the 2s and leaving it as <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>, she failed to reduce the formula to its simplest empirical ratio.
+                  </p>
+                </div>
               )}
               <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
@@ -365,7 +376,7 @@
           const [response, setResponse] = useState("");
           const [submitted, setSubmitted] = useState(false);
           
-          const canSubmit = response.trim().length > 5;
+          const canSubmit = response.trim().length >= 50;
           
           const executeSubmit = () => {
               if (canSubmit) {
@@ -376,31 +387,75 @@
 
           return (
             <div className="space-y-6 animate-fade-in">
-              <h2 className="text-2xl font-bold text-slate-800">Polyatomic Context: <Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></h2>
-              <p className="text-slate-600">Why do we need brackets for Nitrate but not for Chloride?</p>
-              <textarea 
-                  className="w-full p-4 border border-slate-300 rounded-lg h-32 outline-none focus:ring-2 focus:ring-teal-500 transition-shadow" 
-                  placeholder="Explain your analysis..."
-                  value={response} 
-                  onChange={(e) => setResponse(e.target.value)} 
-                  onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); executeSubmit(); } }}
-                  disabled={submitted}
-              ></textarea>
+              <div className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-2">
+                E21CC: Contextual Adaptation & Inventive Thinking
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800">The "32 Oxygen" Factory Crisis</h2>
               
-              {!submitted ? (
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <button 
-                        onClick={executeSubmit} 
-                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto flex items-center justify-center ${canSubmit ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
-                        disabled={!canSubmit}
-                    >
-                        Submit Analysis
-                    </button>
-                    {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Elaborate a bit more! (Min 6 chars)</span>}
+              <p className="text-slate-600">
+                You are the head chemist at a manufacturing plant. A new worker was asked to write the formula for combining Magnesium (<Latex>{"\\mathrm{Mg}^{2+}"}</Latex>) and Nitrate (<Latex>{"\\mathrm{NO_3}^-"}</Latex>). 
+              </p>
+              
+              <div className="bg-rose-50 border border-rose-200 p-6 rounded-xl my-6">
+                 <h3 className="font-bold text-rose-800 flex items-center gap-2 mb-3">
+                  <ShieldAlertIcon size={20} className="text-rose-600" /> 
+                  The Worker's Mistake
+                </h3>
+                <p className="text-rose-900 mb-4">
+                  The worker applied the standard criss-cross rule. Since Nitrate has a valency of 1 and Magnesium has a valency of 2, the worker just tacked the '2' onto the end of the Nitrate symbol. 
+                </p>
+                <div className="bg-white p-4 rounded-lg text-center border border-rose-100 shadow-sm">
+                    <span className="text-slate-500 text-sm block mb-1">What the worker wrote:</span>
+                    <span className="text-4xl font-bold text-red-600 line-through"><Latex>{"\\mathrm{MgNO_{32}}"}</Latex></span>
+                    <p className="mt-3 text-rose-800 font-medium italic">"Boss, the supplier just delivered 1 Magnesium, 1 Nitrogen, and THIRTY-TWO Oxygen atoms! What went wrong?!"</p>
                 </div>
-              ) : (
-                 <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg text-sm text-teal-900 animate-fade-in"><strong className="flex items-center gap-2 mb-1"><CheckCircleIcon size={16}/> Teacher's Note:</strong> Nitrate is a single entity containing multiple atoms. Brackets show the entire group is multiplied.</div>
-              )}
+              </div>
+
+              <div className="bg-teal-50 border border-teal-200 p-6 rounded-xl">
+                <h3 className="font-bold text-teal-800 flex items-center gap-2 mb-3">
+                  <LightbulbIcon size={20} className="text-teal-600" /> 
+                  Invent a Solution
+                </h3>
+                <p className="text-sm text-teal-900 mb-4 leading-relaxed">
+                  The context has changed from single atoms (like <Latex>{"\\mathrm{Cl}^-"}</Latex>) to a <strong>polyatomic group</strong> (<Latex>{"\\mathrm{NO_3}^-"}</Latex>). <br/><br/>
+                  Explain what has gone wrong that led to this crisis. How would YOU write this formula so the factory clearly understands that they need 2 whole nitrate groups, and not 32 oxygens?<br/><br/>
+                  <strong className="text-teal-800">Your answer should clearly explain how you are going to resolve this communication crisis!</strong>
+                </p>
+                <textarea 
+                  className="w-full p-4 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 min-h-[120px]"
+                  placeholder="I would write the formula as... because..."
+                  value={response}
+                  onChange={(e) => setResponse(e.target.value)}
+                  disabled={submitted}
+                ></textarea>
+                
+                {!submitted ? (
+                   <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
+                      <button 
+                          onClick={executeSubmit} 
+                          className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto flex items-center justify-center ${canSubmit ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
+                          disabled={!canSubmit}
+                      >
+                          Submit Invention
+                      </button>
+                      {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Elaborate a bit more! (Min 50 chars - Currently {response.trim().length}/50)</span>}
+                  </div>
+                ) : (
+                  <div className="mt-6 bg-white border border-teal-200 p-5 rounded-lg animate-fade-in shadow-sm">
+                     <h4 className="font-bold text-teal-800 flex items-center gap-2 mb-3"><CheckCircleIcon size={18}/> The Official Convention</h4>
+                    <p className="text-slate-700 text-sm mb-4">
+                      Brilliant problem solving! Did you suggest circling the Nitrate? Using hyphens? Using different colors?
+                    </p>
+                    <p className="text-slate-700 text-sm">
+                      Chemists faced this exact same crisis! Because the context shifted to a group of atoms acting together, they had to invent a new syntax. They decided to use <strong>brackets</strong> to show that the subscript applies to everything inside the group.
+                    </p>
+                    <div className="text-center mt-4 p-3 bg-slate-100 rounded-lg border border-slate-200">
+                       <span className="text-3xl font-bold text-indigo-600"><Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
                 <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Proceed to Practice <ArrowRightIcon size={20} /></button>
@@ -529,7 +584,19 @@
             <div className="text-center py-12 space-y-6 animate-fade-in">
               <div className="bg-green-100 p-6 rounded-full inline-block shadow-inner"><CheckCircleIcon size={80} className="text-green-500 mx-auto"/></div>
               <h2 className="text-4xl font-extrabold text-slate-800">Lesson Complete!</h2>
-              <p className="text-slate-600 text-lg max-w-md mx-auto">You have successfully used evidence to determine ionic formulae and adapted to new contexts. Outstanding work, Detective.</p>
+              <p className="text-slate-600 text-lg max-w-md mx-auto">
+                You have successfully used evidence to determine ionic formulae and adapted to new contexts. Outstanding work, Detective.
+              </p>
+              
+              <div className="max-w-md mx-auto bg-slate-100 rounded-xl p-6 text-left mt-8 border border-slate-200">
+                <h3 className="font-bold text-slate-800 border-b pb-2 mb-4">Key Takeaways:</h3>
+                <ul className="space-y-3 text-slate-700">
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> The criss-cross method helps balance charges to zero.</li>
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Always simplify subscripts to the lowest ratio (empirical formula).</li>
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Use brackets when you need more than one polyatomic ion.</li>
+                </ul>
+              </div>
+
               <div className="pt-8 flex flex-col sm:flex-row justify-center gap-4 border-t border-slate-200 mt-8">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-3 px-8 rounded-full flex items-center justify-center gap-2"><ArrowLeftIcon size={20} /> Review Lesson</button>
                 <button onClick={onReset} className="bg-slate-800 hover:bg-slate-900 transition-colors text-white font-bold py-3 px-10 rounded-full shadow-lg">Start Fresh</button>
@@ -540,6 +607,7 @@
 
         function TeacherDashboard({ onClose, user }) {
           const [res, setRes] = useState([]);
+          const [copied, setCopied] = useState(false);
           
           useEffect(() => {
             if (!isLiveMode || !user) return;
@@ -549,7 +617,18 @@
             });
           }, [user]);
 
-          // NEW LOGIC: Clear All Data Function with Error Handling
+          const copyToClipboard = () => {
+            const textToCopy = res.map(r => 
+              `Name: ${r.studentName}\nPhase: ${r.phase}\nResponse: ${r.text}\nTime: ${new Date(r.timestamp).toLocaleTimeString()}\n-------------------`
+            ).join('\n\n');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            });
+          };
+
+          // Clear All Data Function with Error Handling
           const handleClearAll = async () => {
               if (!db) return;
               const confirmClear = window.confirm("Are you sure you want to permanently delete ALL student responses? This cannot be undone.");
@@ -570,10 +649,19 @@
               <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-700 pb-4 gap-4">
                 <h1 className="text-3xl font-bold flex items-center gap-3 text-indigo-400"><EyeIcon size={32}/> Live Student Responses</h1>
                 <div className="flex items-center gap-3">
+                    <button 
+                      onClick={copyToClipboard}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors border border-slate-600"
+                    >
+                      {copied ? <CheckCircleIcon size={18} className="text-green-400" /> : <CopyIcon size={18} />}
+                      {copied ? "Copied!" : "Copy Output"}
+                    </button>
                     <button onClick={handleClearAll} className="bg-rose-900/40 hover:bg-rose-800 transition-colors text-rose-200 border border-rose-700/50 px-4 py-2 rounded-lg font-bold shadow-sm flex items-center gap-2">
                         <TrashIcon size={18} /> Clear Data
                     </button>
-                    <button onClick={onClose} className="bg-indigo-600 hover:bg-indigo-700 transition-colors px-6 py-2 rounded-lg font-bold shadow-md">Close Dashboard</button>
+                    <button onClick={onClose} className="bg-indigo-600 hover:bg-indigo-700 transition-colors px-6 py-2 rounded-lg font-bold shadow-md flex items-center gap-2">
+                        <XIcon size={18} /> Close Dashboard
+                    </button>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
