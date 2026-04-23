@@ -61,7 +61,7 @@
         const TrashIcon = (p) => <Icon {...p} path='<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>' />;
 
         // ======================================================
-        // 🔥 YOUR FIREBASE CONFIG (Retained!) 🔥
+        // 🔥 YOUR FIREBASE CONFIG 🔥
         // ======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDRO8liDHigDRzV0jpHn3c4SmDlC-l3qLc",
@@ -139,7 +139,7 @@
           useEffect(() => {
             if (!isLiveMode) return;
             const initAuth = async () => {
-              try { await signInAnonymously(auth); } catch (e) { console.error(e); }
+              try { await signInAnonymously(auth); } catch (e) { console.error("Auth init error:", e); }
             };
             initAuth();
             const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -152,7 +152,9 @@
               await addDoc(collection(db, 'studentResponses'), {
                 studentName, phase: phaseTitle, text, timestamp: Date.now()
               });
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("Submission failed: ", e); 
+            }
           };
 
           const steps = [
@@ -196,35 +198,40 @@
               <div className="flex items-center gap-3 text-indigo-600"><BookOpenIcon size={32} /><h2 className="text-3xl font-extrabold">Charges from the Periodic Table</h2></div>
               <p className="text-slate-600">The Group number tells us how many valence electrons an element has, which determines the charge of its ion.</p>
               
+              {/* Fully Unrolled HTML for Tailwind CDN compatibility on GitHub Pages */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
                 <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-center shadow-sm">
-                  <div className="font-bold text-red-800 mb-1">Group 1</div>
+                  <div className="font-bold text-red-800 mb-1 uppercase text-xs">Group 1</div>
                   <div className="text-xs text-red-600 mb-2 h-8">Loses 1 valence <Latex>{"e^-"}</Latex></div>
-                  <div className="text-3xl font-black text-red-600 mb-1"><Latex>+1</Latex></div>
+                  <div className="text-2xl font-black text-red-600 mb-1"><Latex>+1</Latex></div>
                   <div className="text-xs text-slate-500 border-t border-red-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Na}^+, \\mathrm{K}^+"}</Latex></div>
                 </div>
+
                 <div className="bg-orange-50 border border-orange-200 p-4 rounded-xl text-center shadow-sm">
-                  <div className="font-bold text-orange-800 mb-1">Group 2</div>
+                  <div className="font-bold text-orange-800 mb-1 uppercase text-xs">Group 2</div>
                   <div className="text-xs text-orange-600 mb-2 h-8">Loses 2 valence <Latex>{"e^-"}</Latex></div>
-                  <div className="text-3xl font-black text-orange-600 mb-1"><Latex>+2</Latex></div>
+                  <div className="text-2xl font-black text-orange-600 mb-1"><Latex>+2</Latex></div>
                   <div className="text-xs text-slate-500 border-t border-orange-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Mg}^{2+}, \\mathrm{Ca}^{2+}"}</Latex></div>
                 </div>
+
                 <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-center shadow-sm">
-                  <div className="font-bold text-yellow-800 mb-1">Group 13 <span className="text-xs">(III)</span></div>
+                  <div className="font-bold text-yellow-800 mb-1 uppercase text-xs">Group 13</div>
                   <div className="text-xs text-yellow-700 mb-2 h-8">Loses 3 valence <Latex>{"e^-"}</Latex></div>
-                  <div className="text-3xl font-black text-yellow-600 mb-1"><Latex>+3</Latex></div>
+                  <div className="text-2xl font-black text-yellow-600 mb-1"><Latex>+3</Latex></div>
                   <div className="text-xs text-slate-500 border-t border-yellow-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Al}^{3+}"}</Latex></div>
                 </div>
+
                 <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl text-center shadow-sm">
-                  <div className="font-bold text-blue-800 mb-1">Group 16 <span className="text-xs">(VI)</span></div>
+                  <div className="font-bold text-blue-800 mb-1 uppercase text-xs">Group 16</div>
                   <div className="text-xs text-blue-600 mb-2 h-8">Gains 2 <Latex>{"e^-"}</Latex> to be full</div>
-                  <div className="text-3xl font-black text-blue-600 mb-1"><Latex>-2</Latex></div>
+                  <div className="text-2xl font-black text-blue-600 mb-1"><Latex>-2</Latex></div>
                   <div className="text-xs text-slate-500 border-t border-blue-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{O}^{2-}, \\mathrm{S}^{2-}"}</Latex></div>
                 </div>
+
                 <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-center shadow-sm">
-                  <div className="font-bold text-indigo-800 mb-1">Group 17 <span className="text-xs">(VII)</span></div>
+                  <div className="font-bold text-indigo-800 mb-1 uppercase text-xs">Group 17</div>
                   <div className="text-xs text-indigo-600 mb-2 h-8">Gains 1 <Latex>{"e^-"}</Latex> to be full</div>
-                  <div className="text-3xl font-black text-indigo-600 mb-1"><Latex>-1</Latex></div>
+                  <div className="text-2xl font-black text-indigo-600 mb-1"><Latex>-1</Latex></div>
                   <div className="text-xs text-slate-500 border-t border-indigo-100 pt-2 mt-2">e.g., <Latex>{"\\mathrm{Cl}^-, \\mathrm{F}^-"}</Latex></div>
                 </div>
               </div>
@@ -519,7 +526,7 @@
             });
           }, [user]);
 
-          // NEW LOGIC: Clear All Data Function
+          // NEW LOGIC: Clear All Data Function with Error Handling
           const handleClearAll = async () => {
               if (!db) return;
               const confirmClear = window.confirm("Are you sure you want to permanently delete ALL student responses? This cannot be undone.");
@@ -528,9 +535,10 @@
               try {
                   const deletePromises = res.map(r => deleteDoc(doc(db, 'studentResponses', r.id)));
                   await Promise.all(deletePromises);
+                  alert("✅ Dashboard cleared successfully!");
               } catch (e) {
                   console.error("Error clearing dashboard: ", e);
-                  alert("Something went wrong while clearing data. Please check the console.");
+                  alert(`❌ Error clearing data: ${e.message}\n\nMake sure your GitHub domain is added to 'Authorized Domains' in the Firebase Authentication settings!`);
               }
           };
 
