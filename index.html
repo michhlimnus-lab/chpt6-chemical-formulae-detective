@@ -33,6 +33,14 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col">
     
+    <!-- 
+      TAILWIND SAFELIST: 
+      This hidden div forces the Tailwind CDN to generate these colors on page load.
+      It completely bypasses the bug where React injects classes too late for the CDN to notice them.
+      Cost to implement: $0. Toxic Tax: $0.
+    -->
+    <div style="display: none;" class="bg-red-50 border-red-200 text-red-800 text-red-600 bg-orange-50 border-orange-200 text-orange-800 text-orange-600 bg-yellow-50 border-yellow-200 text-yellow-800 text-yellow-600 bg-blue-50 border-blue-200 text-blue-800 text-blue-600 bg-indigo-50 border-indigo-200 text-indigo-800 text-indigo-600 bg-green-50 border-green-200 text-green-900 bg-teal-50 border-teal-200 text-teal-900 hover:bg-indigo-700 bg-indigo-600 text-rose-500 bg-rose-600 hover:bg-rose-700 border-rose-700 bg-rose-900/40 text-rose-200 bg-slate-100 bg-slate-200 bg-slate-300 bg-slate-800 bg-slate-900 text-white text-slate-400 text-slate-500 text-slate-600 text-slate-700 text-slate-800 border-slate-200 border-slate-300 border-slate-700"></div>
+
     <div id="root" class="flex-grow flex flex-col"></div>
 
     <script type="text/babel" data-type="module">
@@ -199,7 +207,6 @@
               <div className="flex items-center gap-3 text-indigo-600"><BookOpenIcon size={32} /><h2 className="text-3xl font-extrabold">Charges from the Periodic Table</h2></div>
               <p className="text-slate-600">The Group number tells us how many valence electrons an element has, which determines the charge of its ion.</p>
               
-              {/* Fully Unrolled HTML for Tailwind CDN compatibility on GitHub Pages */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
                 <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-center shadow-sm">
                   <div className="font-bold text-red-800 mb-1 uppercase text-xs">Group 1</div>
