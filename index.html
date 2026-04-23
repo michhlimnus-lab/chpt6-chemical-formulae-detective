@@ -48,6 +48,7 @@
         );
         const BeakerIcon = (p) => <Icon {...p} path='<path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M14 9h4"/>' />;
         const ArrowRightIcon = (p) => <Icon {...p} path='<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>' />;
+        const ArrowLeftIcon = (p) => <Icon {...p} path='<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>' />;
         const CheckCircleIcon = (p) => <Icon {...p} path='<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>' />;
         const LightbulbIcon = (p) => <Icon {...p} path='<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>' />;
         const MessageSquareIcon = (p) => <Icon {...p} path='<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' />;
@@ -159,11 +160,11 @@
 
           const steps = [
             { component: <IntroScreen studentName={studentName} setStudentName={setStudentName} onNext={() => setCurrentStep(1)} /> },
-            { component: <CrissCrossScreen onNext={() => setCurrentStep(2)} /> },
-            { component: <DebateScreen onNext={() => setCurrentStep(3)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
-            { component: <ContextScreen onNext={() => setCurrentStep(4)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
-            { component: <PracticeScreen onNext={() => setCurrentStep(5)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
-            { component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} /> },
+            { component: <CrissCrossScreen onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} /> },
+            { component: <DebateScreen onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
+            { component: <ContextScreen onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
+            { component: <PracticeScreen onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(3)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
+            { component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} onPrev={() => setCurrentStep(4)} /> },
           ];
 
           if (showTeacherView) return <TeacherDashboard onClose={() => setShowTeacherView(false)} user={user} />;
@@ -254,7 +255,7 @@
           );
         }
 
-        function CrissCrossScreen({ onNext }) {
+        function CrissCrossScreen({ onNext, onPrev }) {
           const [catIdx, setCatIdx] = useState(2);
           const [anIdx, setAnIdx] = useState(1);
           const [crossStep, setCrossStep] = useState(0);
@@ -294,12 +295,15 @@
                 {crossStep >= 3 && <div className="text-5xl mt-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700 shadow-md"><Latex>{formatFormulaLatex(cation, anion, finalCatSub, finalAnSub)}</Latex></div>}
               </div>
               <div className="flex justify-center"><button onClick={() => setCrossStep((crossStep + 1) % 4)} className="bg-yellow-500 hover:bg-yellow-600 font-bold py-3 px-8 rounded-full flex items-center gap-2 shadow-lg transition-transform active:scale-95"><RefreshCwIcon size={20}/> {crossStep === 0 ? "Show Valency" : crossStep === 1 ? "Criss-Cross!" : crossStep === 2 ? "Final Formula" : "Reset"}</button></div>
-              <div className="flex justify-end pt-8 border-t mt-8"><button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold py-2 px-6 rounded-lg shadow-md">Next Phase</button></div>
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
+                <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold py-2 px-6 rounded-lg shadow-md flex items-center gap-2">Next Phase <ArrowRightIcon size={20} /></button>
+              </div>
             </div>
           );
         }
 
-        function DebateScreen({ onNext, submitResponse }) {
+        function DebateScreen({ onNext, onPrev, submitResponse }) {
           const [response, setResponse] = useState("");
           const [submitted, setSubmitted] = useState(false);
           
@@ -332,7 +336,7 @@
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                     <button 
                         onClick={executeSubmit} 
-                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto ${canSubmit ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
+                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto flex items-center justify-center ${canSubmit ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
                         disabled={!canSubmit}
                     >
                         Submit Reasoning
@@ -342,12 +346,15 @@
               ) : (
                 <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-sm text-green-900 animate-fade-in"><strong className="flex items-center gap-2 mb-1"><CheckCircleIcon size={16}/> Correct Viewpoint:</strong> Tom wins. Ionic formulas show the empirical (simplest) ratio.</div>
               )}
-              <div className="flex justify-end"><button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Next Phase</button></div>
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
+                <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Next Phase <ArrowRightIcon size={20} /></button>
+              </div>
             </div>
           );
         }
 
-        function ContextScreen({ onNext, submitResponse }) {
+        function ContextScreen({ onNext, onPrev, submitResponse }) {
           const [response, setResponse] = useState("");
           const [submitted, setSubmitted] = useState(false);
           
@@ -377,7 +384,7 @@
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                     <button 
                         onClick={executeSubmit} 
-                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto ${canSubmit ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
+                        className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto flex items-center justify-center ${canSubmit ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
                         disabled={!canSubmit}
                     >
                         Submit Analysis
@@ -387,13 +394,16 @@
               ) : (
                  <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg text-sm text-teal-900 animate-fade-in"><strong className="flex items-center gap-2 mb-1"><CheckCircleIcon size={16}/> Teacher's Note:</strong> Nitrate is a single entity containing multiple atoms. Brackets show the entire group is multiplied.</div>
               )}
-              <div className="flex justify-end"><button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Proceed to Practice</button></div>
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
+                <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Proceed to Practice <ArrowRightIcon size={20} /></button>
+              </div>
             </div>
           );
         }
 
         // --- PHASE 5: SUBSCRIPT PRACTICE ---
-        function PracticeScreen({ onNext, submitResponse }) {
+        function PracticeScreen({ onNext, onPrev, submitResponse }) {
           const questions = [
             { cat: CATIONS[0] /* Na */, an: ANIONS[0] /* Cl */, expC: 1, expA: 1 },
             { cat: CATIONS[2] /* Mg */, an: ANIONS[0] /* Cl */, expC: 1, expA: 2 },
@@ -496,21 +506,27 @@
                 </div>
               </div>
 
-              {feedback === 'finished' && (
-                 <div className="flex justify-end pt-4 animate-fade-in"><button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors">Complete Lesson</button></div>
-              )}
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200 animate-fade-in">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
+                {feedback === 'finished' && (
+                  <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors flex items-center gap-2">Complete Lesson <ArrowRightIcon size={20} /></button>
+                )}
+              </div>
             </div>
           );
         }
 
         // --- Phase 6: Summary Screen ---
-        function SummaryScreen({ onReset }) {
+        function SummaryScreen({ onReset, onPrev }) {
           return (
             <div className="text-center py-12 space-y-6 animate-fade-in">
               <div className="bg-green-100 p-6 rounded-full inline-block shadow-inner"><CheckCircleIcon size={80} className="text-green-500 mx-auto"/></div>
               <h2 className="text-4xl font-extrabold text-slate-800">Lesson Complete!</h2>
               <p className="text-slate-600 text-lg max-w-md mx-auto">You have successfully used evidence to determine ionic formulae and adapted to new contexts. Outstanding work, Detective.</p>
-              <div className="pt-8"><button onClick={onReset} className="bg-slate-800 hover:bg-slate-900 transition-colors text-white font-bold py-3 px-10 rounded-full shadow-lg">Restart Lesson</button></div>
+              <div className="pt-8 flex flex-col sm:flex-row justify-center gap-4 border-t border-slate-200 mt-8">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-3 px-8 rounded-full flex items-center justify-center gap-2"><ArrowLeftIcon size={20} /> Review Lesson</button>
+                <button onClick={onReset} className="bg-slate-800 hover:bg-slate-900 transition-colors text-white font-bold py-3 px-10 rounded-full shadow-lg">Start Fresh</button>
+              </div>
             </div>
           );
         }
