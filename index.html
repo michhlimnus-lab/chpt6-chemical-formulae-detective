@@ -566,13 +566,13 @@
                    </select>
                 </div>
                 <div className="h-16 flex items-center justify-center">
-                  {feedback === 'correct' && <div className="text-green-600 font-bold text-xl flex items-center gap-2 animate-bounce-short"><CheckCircleIcon /> Perfect Balance!</div>}
-                  {feedback === 'wrong' && <div className="text-rose-600 font-bold flex items-center gap-2 animate-pulse"><ShieldAlertIcon /> Charges don't cancel to zero. Try again!</div>}
+                  {feedback === 'correct' && <div className="text-green-600 font-bold text-xl flex items-center gap-2 animate-bounce-short"><CheckCircleIcon /> Correct!</div>}
+                  {feedback === 'wrong' && <div className="text-rose-600 font-bold flex items-center gap-2 animate-pulse"><ShieldAlertIcon /> Wrong! Identify the valency and use the cross method!</div>}
                   {feedback === 'finished' && <div className="text-indigo-600 font-bold text-xl">Challenge Complete!</div>}
                   {!feedback && <button onClick={handleCheck} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-md transition-transform active:scale-95">Check Formula</button>}
                 </div>
               </div>
-              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200 animate-fade-in">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
                 {feedback === 'finished' && <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors flex items-center gap-2">Complete Lesson <ArrowRightIcon size={20} /></button>}
               </div>
