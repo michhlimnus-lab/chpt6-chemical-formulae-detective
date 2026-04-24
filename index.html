@@ -33,7 +33,6 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col">
     
-    <!-- TAILWIND SAFELIST: Ensures colors load on GitHub Pages -->
     <div style="display: none;" class="bg-red-50 border-red-200 text-red-800 text-red-600 bg-orange-50 border-orange-200 text-orange-800 text-orange-600 bg-yellow-50 border-yellow-200 text-yellow-800 text-yellow-600 bg-blue-50 border-blue-200 text-blue-800 text-blue-600 bg-indigo-50 border-indigo-200 text-indigo-800 text-indigo-600 bg-green-50 border-green-200 text-green-900 bg-teal-50 border-teal-200 text-teal-900 hover:bg-indigo-700 bg-indigo-600 text-rose-500 bg-rose-600 hover:bg-rose-700 border-rose-700 bg-rose-900/40 text-rose-200 bg-slate-100 bg-slate-200 bg-slate-300 bg-slate-800 bg-slate-900 text-white text-slate-400 text-slate-500 text-slate-600 text-slate-700 text-slate-800 border-slate-200 border-slate-300 border-slate-700"></div>
 
     <div id="root" class="flex-grow flex flex-col"></div>
@@ -45,7 +44,6 @@
 
         const { useState, useEffect, useRef } = React;
 
-        // --- Custom SVG Icons ---
         const Icon = ({ path, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} dangerouslySetInnerHTML={{ __html: path }} />
         );
@@ -63,10 +61,8 @@
         const XIcon = (p) => <Icon {...p} path='<path d="M18 6 6 18"/><path d="m6 6 12 12"/>' />;
         const TargetIcon = (p) => <Icon {...p} path='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>' />;
         const TrashIcon = (p) => <Icon {...p} path='<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>' />;
+        const LockIcon = (p) => <Icon {...p} path='<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>' />;
 
-        // ======================================================
-        // 🔥 YOUR FIREBASE CONFIG 🔥
-        // ======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDRO8liDHigDRzV0jpHn3c4SmDlC-l3qLc",
             authDomain: "chem-detective-2026.firebaseapp.com",
@@ -75,7 +71,6 @@
             messagingSenderId: "477655926627",
             appId: "1:477655926627:web:2a7d12a0163b54af5ab556"
         };
-        // ======================================================
 
         const isLiveMode = !!firebaseConfig.apiKey;
         let app, auth, db;
@@ -162,12 +157,14 @@
           };
 
           const steps = [
-            { component: <IntroScreen studentName={studentName} setStudentName={setStudentName} onNext={() => setCurrentStep(1)} /> },
-            { component: <CrissCrossScreen onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} /> },
-            { component: <DebateScreen onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
-            { component: <ContextScreen onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
-            { component: <PracticeScreen onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(3)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
-            { component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} onPrev={() => setCurrentStep(4)} /> },
+            { title: "Phase 1: Periodic Table", component: <IntroScreen studentName={studentName} setStudentName={setStudentName} onNext={() => setCurrentStep(1)} /> },
+            { title: "Phase 2: Evidence & Criss-Cross", component: <CrissCrossScreen onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} /> },
+            { title: "Phase 3a: The Debate", component: <DebateInputScreen onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
+            { title: "Phase 3b: Evaluation", component: <DebateFeedbackScreen onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} /> },
+            { title: "Phase 4a: Context Shift", component: <ContextInputScreen onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(3)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
+            { title: "Phase 4b: The Convention", component: <ContextFeedbackScreen onNext={() => setCurrentStep(6)} onPrev={() => setCurrentStep(4)} /> },
+            { title: "Phase 5: Practice", component: <PracticeScreen onNext={() => setCurrentStep(7)} onPrev={() => setCurrentStep(5)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
+            { title: "Phase 6: Summary", component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} onPrev={() => setCurrentStep(6)} /> },
           ];
 
           if (showTeacherView) return <TeacherDashboard onClose={() => setShowTeacherView(false)} user={user} />;
@@ -182,7 +179,7 @@
                   </div>
                   <div className="flex items-center gap-4">
                     <button onClick={() => setShowTeacherView(true)} className="text-indigo-200 hover:text-white transition-colors" title="Teacher Dashboard"><EyeIcon size={20} /></button>
-                    <div className="text-xs font-bold bg-indigo-700 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-inner">Phase {currentStep + 1} / {steps.length}</div>
+                    <div className="text-xs font-bold bg-indigo-700 px-3 py-1.5 rounded-full uppercase tracking-wider shadow-inner">{steps[currentStep].title}</div>
                   </div>
                 </div>
               </header>
@@ -304,7 +301,7 @@
           );
         }
 
-        function DebateScreen({ onNext, onPrev, submitResponse }) {
+        function DebateInputScreen({ onNext, onPrev, submitResponse }) {
           const [response, setResponse] = useState("");
           const [submitted, setSubmitted] = useState(false);
           
@@ -354,25 +351,41 @@
                     {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Please type at least 50 characters to explain your reasoning! ({response.trim().length}/50)</span>}
                 </div>
               ) : (
-                <div className="bg-green-50 border border-green-200 p-5 rounded-lg text-sm text-green-900 animate-fade-in shadow-sm">
-                  <h4 className="font-bold flex items-center gap-2 mb-2 text-green-800"><CheckCircleIcon size={18}/> Teacher's Evaluation</h4>
-                  <p className="mb-3">
-                    <strong>Tom is correct.</strong> Ionic compounds form giant lattice structures, so their chemical formulae must represent the simplest whole-number ratio of ions. Just like how you simplify a ratio of 2:2 to 1:1 in mathematics, the ratio of Magnesium to Oxide ions must be simplified to 1:1, giving <strong><Latex>{"\\mathrm{MgO}"}</Latex></strong>.
-                  </p>
-                  <p>
-                    <strong>Why Sarah is wrong:</strong> Sarah treated the criss-cross method as an unbreakable rule rather than a mathematical shortcut. By blindly crossing the 2s and leaving it as <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>, she failed to reduce the formula to its simplest empirical ratio.
-                  </p>
+                <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg text-sm text-emerald-900 animate-fade-in shadow-sm flex items-center gap-3 mt-4">
+                  <CheckCircleIcon size={24} className="text-emerald-600 shrink-0"/>
+                  <p><strong>Reasoning logged securely!</strong> Please wait for your teacher to review the live dashboard before proceeding to the feedback screen.</p>
                 </div>
               )}
               <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
-                <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Next Phase <ArrowRightIcon size={20} /></button>
+                <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>View Evaluation <ArrowRightIcon size={20} /></button>
               </div>
             </div>
           );
         }
 
-        function ContextScreen({ onNext, onPrev, submitResponse }) {
+        function DebateFeedbackScreen({ onNext, onPrev }) {
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-2xl font-bold text-slate-800">The Chemist's Debate: Evaluation</h2>
+              <div className="bg-green-50 border border-green-200 p-8 rounded-xl shadow-sm">
+                <h4 className="font-bold flex items-center gap-2 mb-4 text-green-800 border-b border-green-200 pb-2"><CheckCircleIcon size={24}/> Teacher's Final Evaluation</h4>
+                <p className="text-slate-800 text-lg mb-4 leading-relaxed">
+                  <strong>Tom is correct.</strong> Ionic compounds form giant lattice structures, so their chemical formulae must represent the simplest whole-number ratio of ions. Just like how you simplify a ratio of 2:2 to 1:1 in mathematics, the ratio of Magnesium to Oxide ions must be simplified to 1:1, giving <strong className="text-indigo-700"><Latex>{"\\mathrm{MgO}"}</Latex></strong>.
+                </p>
+                <p className="text-slate-800 text-lg leading-relaxed">
+                  <strong>Why Sarah is wrong:</strong> Sarah treated the criss-cross method as an unbreakable rule rather than a mathematical shortcut. By blindly crossing the 2s and leaving it as <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>, she failed to reduce the formula to its simplest empirical ratio.
+                </p>
+              </div>
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Back to My Answer</button>
+                <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors flex items-center gap-2">Next Phase <ArrowRightIcon size={20} /></button>
+              </div>
+            </div>
+          );
+        }
+
+        function ContextInputScreen({ onNext, onPrev, submitResponse }) {
           const [response, setResponse] = useState("");
           const [submitted, setSubmitted] = useState(false);
           
@@ -393,7 +406,7 @@
               <h2 className="text-2xl font-bold text-slate-800">The "32 Oxygen" Factory Crisis</h2>
               
               <p className="text-slate-600">
-                You are the head chemist at a manufacturing plant. A new worker was asked to write the formula for combining Magnesium (<Latex>{"\\mathrm{Mg}^{2+}"}</Latex>) and Nitrate (<Latex>{"\\mathrm{NO_3}^-"}</Latex>). 
+                You are the head chemist programming an automated chemical mixer at a plant. A new worker was asked to input the formula for a lattice containing Magnesium (<Latex>{"\\mathrm{Mg}^{2+}"}</Latex>) and Nitrate (<Latex>{"\\mathrm{NO_3}^-"}</Latex>) ions into the system. 
               </p>
               
               <div className="bg-rose-50 border border-rose-200 p-6 rounded-xl my-6">
@@ -405,9 +418,9 @@
                   The worker applied the standard criss-cross rule. Since Nitrate has a valency of 1 and Magnesium has a valency of 2, the worker just tacked the '2' onto the end of the Nitrate symbol. 
                 </p>
                 <div className="bg-white p-4 rounded-lg text-center border border-rose-100 shadow-sm">
-                    <span className="text-slate-500 text-sm block mb-1">What the worker wrote:</span>
+                    <span className="text-slate-500 text-sm block mb-1">What the worker programmed:</span>
                     <span className="text-4xl font-bold text-red-600 line-through"><Latex>{"\\mathrm{MgNO_{32}}"}</Latex></span>
-                    <p className="mt-3 text-rose-800 font-medium italic">"Boss, the supplier just delivered 1 Magnesium, 1 Nitrogen, and THIRTY-TWO Oxygen atoms! What went wrong?!"</p>
+                    <p className="mt-3 text-rose-800 font-medium italic">"Boss, the mixer's AI just halted production! It thinks we need a lattice ratio of 1 Magnesium to 1 Nitrogen and THIRTY-TWO Oxygens! What went wrong?!"</p>
                 </div>
               </div>
 
@@ -418,7 +431,7 @@
                 </h3>
                 <p className="text-sm text-teal-900 mb-4 leading-relaxed">
                   The context has changed from single atoms (like <Latex>{"\\mathrm{Cl}^-"}</Latex>) to a <strong>polyatomic group</strong> (<Latex>{"\\mathrm{NO_3}^-"}</Latex>). <br/><br/>
-                  Explain what has gone wrong that led to this crisis. How would YOU write this formula so the factory clearly understands that they need 2 whole nitrate groups, and not 32 oxygens?<br/><br/>
+                  Explain what has gone wrong that led to this crisis. How would YOU write this formula so the factory AI clearly understands that the lattice requires <strong>2 whole nitrate groups</strong> for every 1 magnesium ion, and not 32 oxygens?<br/><br/>
                   <strong className="text-teal-800">Your answer should clearly explain how you are going to resolve this communication crisis!</strong>
                 </p>
                 <textarea 
@@ -441,37 +454,52 @@
                       {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Elaborate a bit more! (Min 50 chars - Currently {response.trim().length}/50)</span>}
                   </div>
                 ) : (
-                  <div className="mt-6 bg-white border border-teal-200 p-5 rounded-lg animate-fade-in shadow-sm">
-                     <h4 className="font-bold text-teal-800 flex items-center gap-2 mb-3"><CheckCircleIcon size={18}/> The Official Convention</h4>
-                    <p className="text-slate-700 text-sm mb-4">
-                      Brilliant problem solving! Did you suggest circling the Nitrate? Using hyphens? Using different colors?
-                    </p>
-                    <p className="text-slate-700 text-sm">
-                      Chemists faced this exact same crisis! Because the context shifted to a group of atoms acting together, they had to invent a new syntax. They decided to use <strong>brackets</strong> to show that the subscript applies to everything inside the group.
-                    </p>
-                    <div className="text-center mt-4 p-3 bg-slate-100 rounded-lg border border-slate-200">
-                       <span className="text-3xl font-bold text-indigo-600"><Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></span>
-                    </div>
+                  <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg text-sm text-emerald-900 animate-fade-in shadow-sm flex items-center gap-3 mt-4">
+                    <CheckCircleIcon size={24} className="text-emerald-600 shrink-0"/>
+                    <p><strong>Solution logged securely!</strong> Hang tight. Wait for your teacher's instruction before you reveal the official convention.</p>
                   </div>
                 )}
               </div>
 
               <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
-                <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Proceed to Practice <ArrowRightIcon size={20} /></button>
+                <button onClick={onNext} disabled={!submitted} className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${submitted ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>View Convention <ArrowRightIcon size={20} /></button>
               </div>
             </div>
           );
         }
 
-        // --- PHASE 5: SUBSCRIPT PRACTICE ---
+        function ContextFeedbackScreen({ onNext, onPrev }) {
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-2xl font-bold text-slate-800">The "32 Oxygen" Crisis: Resolved</h2>
+              <div className="bg-white border border-teal-200 p-8 rounded-xl shadow-sm">
+                <h4 className="font-bold text-teal-800 flex items-center gap-2 mb-4 border-b border-teal-100 pb-2"><CheckCircleIcon size={24}/> The Official Convention</h4>
+                <p className="text-slate-700 text-lg mb-4 leading-relaxed">
+                  Brilliant problem solving! Did you suggest circling the Nitrate? Using hyphens? Using different colors?
+                </p>
+                <p className="text-slate-700 text-lg leading-relaxed">
+                  Chemists faced this exact same crisis! Because the context shifted to a group of atoms acting together, they had to invent a new syntax to show the correct ratio. They decided to use <strong>brackets</strong> to show that the subscript applies to everything inside the polyatomic group.
+                </p>
+                <div className="text-center mt-8 p-6 bg-slate-100 rounded-xl border border-slate-300 shadow-inner">
+                   <span className="text-5xl font-bold text-indigo-600"><Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></span>
+                </div>
+              </div>
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Back to My Answer</button>
+                <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors flex items-center gap-2">Proceed to Practice <ArrowRightIcon size={20} /></button>
+              </div>
+            </div>
+          );
+        }
+
         function PracticeScreen({ onNext, onPrev, submitResponse }) {
           const questions = [
-            { cat: CATIONS[0] /* Na */, an: ANIONS[0] /* Cl */, expC: 1, expA: 1 },
-            { cat: CATIONS[2] /* Mg */, an: ANIONS[0] /* Cl */, expC: 1, expA: 2 },
-            { cat: CATIONS[2] /* Mg */, an: ANIONS[1] /* O */,  expC: 1, expA: 1 },
-            { cat: CATIONS[4] /* Al */, an: ANIONS[1] /* O */,  expC: 2, expA: 3 },
-            { cat: CATIONS[3] /* Ca */, an: ANIONS[3] /* NO3 */, expC: 1, expA: 2 }
+            { cat: CATIONS[0], an: ANIONS[0], expC: 1, expA: 1 },
+            { cat: CATIONS[2], an: ANIONS[0], expC: 1, expA: 2 },
+            { cat: CATIONS[2], an: ANIONS[1], expC: 1, expA: 1 },
+            { cat: CATIONS[4], an: ANIONS[1], expC: 2, expA: 3 },
+            { cat: CATIONS[3], an: ANIONS[3], expC: 1, expA: 2 }
           ];
 
           const [qIdx, setQIdx] = useState(0);
@@ -521,82 +549,51 @@
                 </div>
                 <div className="font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full text-sm">Question {qIdx + 1} of {questions.length}</div>
               </div>
-              
-              <p className="text-slate-600">Select the correct subscripts to balance the charges for this compound.</p>
-
               <div className="bg-slate-100 rounded-2xl p-8 border border-slate-200 mt-6 text-center shadow-sm">
-                
-                {/* The Ions */}
                 <div className="flex justify-center gap-12 text-3xl mb-8 opacity-80 font-medium">
                    <Latex>{formatIonLatex(currentQ.cat, true)}</Latex>
                    <Latex>+</Latex>
                    <Latex>{formatIonLatex(currentQ.an, false)}</Latex>
                 </div>
-
-                {/* The Interactive Formula Builder */}
                 <div className="flex justify-center items-end text-5xl font-bold font-serif mb-8 bg-white p-6 rounded-xl shadow-inner inline-flex border border-slate-200">
                    <div className="text-slate-800"><Latex>{renderCatSymbol()}</Latex></div>
-                   <select 
-                      className={`text-2xl border-2 rounded p-1 mx-1 outline-none text-blue-600 font-sans cursor-pointer transition-colors ${cSub > 1 ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-transparent text-transparent hover:text-blue-400'}`}
-                      value={cSub} 
-                      onChange={(e)=>setCSub(Number(e.target.value))}
-                    >
+                   <select className={`text-2xl border-2 rounded p-1 mx-1 outline-none text-blue-600 font-sans cursor-pointer transition-colors ${cSub > 1 ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-transparent text-transparent hover:text-blue-400'}`} value={cSub} onChange={(e)=>setCSub(Number(e.target.value))}>
                      {[1,2,3,4].map(n => <option key={n} value={n} className="text-slate-800">{n === 1 ? '1 (Hide)' : n}</option>)}
                    </select>
-                   
                    <div className="text-slate-800"><Latex>{renderAnSymbol()}</Latex></div>
-                   <select 
-                      className={`text-2xl border-2 rounded p-1 mx-1 outline-none text-yellow-600 font-sans cursor-pointer transition-colors ${aSub > 1 ? 'border-yellow-400 bg-yellow-50' : 'border-slate-200 bg-transparent text-transparent hover:text-yellow-400'}`}
-                      value={aSub} 
-                      onChange={(e)=>setASub(Number(e.target.value))}
-                    >
+                   <select className={`text-2xl border-2 rounded p-1 mx-1 outline-none text-yellow-600 font-sans cursor-pointer transition-colors ${aSub > 1 ? 'border-yellow-400 bg-yellow-50' : 'border-slate-200 bg-transparent text-transparent hover:text-yellow-400'}`} value={aSub} onChange={(e)=>setASub(Number(e.target.value))}>
                      {[1,2,3,4].map(n => <option key={n} value={n} className="text-slate-800">{n === 1 ? '1 (Hide)' : n}</option>)}
                    </select>
                 </div>
-
-                {/* Feedback & Actions */}
                 <div className="h-16 flex items-center justify-center">
                   {feedback === 'correct' && <div className="text-green-600 font-bold text-xl flex items-center gap-2 animate-bounce-short"><CheckCircleIcon /> Perfect Balance!</div>}
                   {feedback === 'wrong' && <div className="text-rose-600 font-bold flex items-center gap-2 animate-pulse"><ShieldAlertIcon /> Charges don't cancel to zero. Try again!</div>}
                   {feedback === 'finished' && <div className="text-indigo-600 font-bold text-xl">Challenge Complete!</div>}
-                  
-                  {!feedback && (
-                    <button onClick={handleCheck} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-md transition-transform active:scale-95">
-                      Check Formula
-                    </button>
-                  )}
+                  {!feedback && <button onClick={handleCheck} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-md transition-transform active:scale-95">Check Formula</button>}
                 </div>
               </div>
-
-              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200 animate-fade-in">
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Previous</button>
-                {feedback === 'finished' && (
-                  <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors flex items-center gap-2">Complete Lesson <ArrowRightIcon size={20} /></button>
-                )}
+                {feedback === 'finished' && <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors flex items-center gap-2">Complete Lesson <ArrowRightIcon size={20} /></button>}
               </div>
             </div>
           );
         }
 
-        // --- Phase 6: Summary Screen ---
         function SummaryScreen({ onReset, onPrev }) {
           return (
             <div className="text-center py-12 space-y-6 animate-fade-in">
               <div className="bg-green-100 p-6 rounded-full inline-block shadow-inner"><CheckCircleIcon size={80} className="text-green-500 mx-auto"/></div>
               <h2 className="text-4xl font-extrabold text-slate-800">Lesson Complete!</h2>
-              <p className="text-slate-600 text-lg max-w-md mx-auto">
-                You have successfully used evidence to determine ionic formulae and adapted to new contexts. Outstanding work, Detective.
-              </p>
-              
+              <p className="text-slate-600 text-lg max-w-md mx-auto">You have successfully used evidence to determine ionic formulae and adapted to new contexts. Outstanding work, Detective.</p>
               <div className="max-w-md mx-auto bg-slate-100 rounded-xl p-6 text-left mt-8 border border-slate-200">
                 <h3 className="font-bold text-slate-800 border-b pb-2 mb-4">Key Takeaways:</h3>
                 <ul className="space-y-3 text-slate-700">
-                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> The criss-cross method helps balance charges to zero.</li>
-                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Always simplify subscripts to the lowest ratio (empirical formula).</li>
-                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Use brackets when you need more than one polyatomic ion.</li>
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Ionic lattices require the simplest whole-number ratio.</li>
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Criss-cross is a shortcut, but charge balancing is the evidence.</li>
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Polyatomic ions require brackets when multiplied in a ratio.</li>
                 </ul>
               </div>
-
               <div className="pt-8 flex flex-col sm:flex-row justify-center gap-4 border-t border-slate-200 mt-8">
                 <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-3 px-8 rounded-full flex items-center justify-center gap-2"><ArrowLeftIcon size={20} /> Review Lesson</button>
                 <button onClick={onReset} className="bg-slate-800 hover:bg-slate-900 transition-colors text-white font-bold py-3 px-10 rounded-full shadow-lg">Start Fresh</button>
@@ -606,62 +603,99 @@
         }
 
         function TeacherDashboard({ onClose, user }) {
+          const [isUnlocked, setIsUnlocked] = useState(false);
+          const [pin, setPin] = useState("");
+          const [pinError, setPinError] = useState(false);
           const [res, setRes] = useState([]);
           const [copied, setCopied] = useState(false);
+          const [showConfirm, setShowConfirm] = useState(false);
+          const [isClearing, setIsClearing] = useState(false);
           
           useEffect(() => {
-            if (!isLiveMode || !user) return;
+            if (!isLiveMode || !user || !isUnlocked) return;
             return onSnapshot(collection(db, 'studentResponses'), s => {
                 const data = s.docs.map(d => ({id: d.id, ...d.data()}));
                 setRes(data.sort((a,b) => b.timestamp - a.timestamp));
             });
-          }, [user]);
+          }, [user, isUnlocked]);
+
+          const handleUnlock = () => {
+            if (pin === "8600") {
+              setIsUnlocked(true);
+              setPinError(false);
+            } else {
+              setPinError(true);
+              setPin("");
+            }
+          };
+
+          const executeClearAll = async () => {
+              if (!db) return;
+              setIsClearing(true);
+              try {
+                  const deletePromises = res.map(r => deleteDoc(doc(db, 'studentResponses', r.id)));
+                  await Promise.all(deletePromises);
+                  setShowConfirm(false);
+              } catch (e) {
+                  console.error("Error clearing dashboard: ", e);
+              } finally {
+                  setIsClearing(false);
+              }
+          };
 
           const copyToClipboard = () => {
-            const textToCopy = res.map(r => 
-              `Name: ${r.studentName}\nPhase: ${r.phase}\nResponse: ${r.text}\nTime: ${new Date(r.timestamp).toLocaleTimeString()}\n-------------------`
-            ).join('\n\n');
-            
+            const textToCopy = res.map(r => `Name: ${r.studentName}\nPhase: ${r.phase}\nResponse: ${r.text}\nTime: ${new Date(r.timestamp).toLocaleTimeString()}\n-------------------`).join('\n\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
             });
           };
 
-          // Clear All Data Function with Error Handling
-          const handleClearAll = async () => {
-              if (!db) return;
-              const confirmClear = window.confirm("Are you sure you want to permanently delete ALL student responses? This cannot be undone.");
-              if (!confirmClear) return;
-              
-              try {
-                  const deletePromises = res.map(r => deleteDoc(doc(db, 'studentResponses', r.id)));
-                  await Promise.all(deletePromises);
-                  alert("✅ Dashboard cleared successfully!");
-              } catch (e) {
-                  console.error("Error clearing dashboard: ", e);
-                  alert(`❌ Error clearing data: ${e.message}\n\nMake sure your GitHub domain is added to 'Authorized Domains' in the Firebase Authentication settings!`);
-              }
-          };
+          if (!isUnlocked) {
+            return (
+              <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 font-sans relative">
+                <button onClick={onClose} className="absolute top-8 right-8 bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-full"><XIcon size={24}/></button>
+                <div className="bg-slate-800 p-10 rounded-3xl border border-slate-700 max-w-sm w-full text-center shadow-2xl animate-fade-in">
+                  <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <LockIcon size={40} className="text-indigo-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold mb-2">Teacher Vault</h2>
+                  <p className="text-slate-400 text-sm mb-8">Enter your secure PIN to access live student responses.</p>
+                  <input type="password" value={pin} onChange={e => {setPin(e.target.value); setPinError(false);}} onKeyDown={e => e.key === 'Enter' && handleUnlock()} placeholder="Enter PIN" className={`w-full bg-slate-900 border ${pinError ? 'border-rose-500' : 'border-slate-600'} rounded-xl p-4 text-center text-xl tracking-widest outline-none mb-2 text-white`}/>
+                  {pinError && <p className="text-rose-500 text-sm mb-4 animate-pulse">Incorrect PIN.</p>}
+                  <button onClick={handleUnlock} className="w-full bg-indigo-600 hover:bg-indigo-700 font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 mt-4">Unlock Dashboard</button>
+                </div>
+              </div>
+            );
+          }
 
           return (
-            <div className="min-h-screen bg-slate-900 text-white p-8 font-sans">
+            <div className="min-h-screen bg-slate-900 text-white p-8 font-sans relative">
+              {showConfirm && (
+                <div className="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+                  <div className="bg-slate-800 border border-rose-500/50 p-8 rounded-3xl max-w-md w-full text-center shadow-2xl">
+                    <TrashIcon size={56} className="text-rose-500 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">Nuke all data?</h3>
+                    <p className="text-slate-400 mb-8">Permanently delete all student responses.</p>
+                    <div className="flex gap-4">
+                      <button onClick={() => setShowConfirm(false)} className="flex-1 bg-slate-700 py-3 rounded-xl">Cancel</button>
+                      <button onClick={executeClearAll} disabled={isClearing} className="flex-1 bg-rose-600 py-3 rounded-xl flex justify-center items-center">
+                        {isClearing ? <RefreshCwIcon size={20} className="animate-spin" /> : "Delete All"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-700 pb-4 gap-4">
                 <h1 className="text-3xl font-bold flex items-center gap-3 text-indigo-400"><EyeIcon size={32}/> Live Student Responses</h1>
                 <div className="flex items-center gap-3">
-                    <button 
-                      onClick={copyToClipboard}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors border border-slate-600"
-                    >
+                    <button onClick={copyToClipboard} className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600">
                       {copied ? <CheckCircleIcon size={18} className="text-green-400" /> : <CopyIcon size={18} />}
                       {copied ? "Copied!" : "Copy Output"}
                     </button>
-                    <button onClick={handleClearAll} className="bg-rose-900/40 hover:bg-rose-800 transition-colors text-rose-200 border border-rose-700/50 px-4 py-2 rounded-lg font-bold shadow-sm flex items-center gap-2">
-                        <TrashIcon size={18} /> Clear Data
-                    </button>
-                    <button onClick={onClose} className="bg-indigo-600 hover:bg-indigo-700 transition-colors px-6 py-2 rounded-lg font-bold shadow-md flex items-center gap-2">
-                        <XIcon size={18} /> Close Dashboard
-                    </button>
+                    <button onClick={() => setShowConfirm(true)} className="bg-rose-900/40 text-rose-200 border border-rose-700/50 px-4 py-2 rounded-lg font-bold flex items-center gap-2"><TrashIcon size={18} /> Clear Data</button>
+                    <button onClick={onClose} className="bg-indigo-600 px-6 py-2 rounded-lg font-bold flex items-center gap-2"><XIcon size={18} /> Close Dashboard</button>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
@@ -679,7 +713,7 @@
                 {res.length === 0 && (
                    <div className="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-4">
                       <RefreshCwIcon size={48} className="animate-spin text-slate-700" />
-                      <p className="text-xl font-medium">Dashboard active. Waiting for student submissions...</p>
+                      <p className="text-xl font-medium">Dashboard active. Waiting for submissions...</p>
                    </div>
                 )}
               </div>
