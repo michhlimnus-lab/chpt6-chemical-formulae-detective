@@ -254,9 +254,10 @@
         }
 
         function CrissCrossScreen({ onNext, onPrev }) {
-          const [catIdx, setCatIdx] = useState(2);
-          const [anIdx, setAnIdx] = useState(1);
+          const [catIdx, setCatIdx] = useState(0);
+          const [anIdx, setAnIdx] = useState(0);
           const [crossStep, setCrossStep] = useState(0);
+          
           const cation = CATIONS[catIdx];
           const anion = ANIONS[anIdx];
           const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
@@ -327,8 +328,8 @@
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 mt-2">
-                <div className="bg-red-50 border border-red-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"Criss-cross gives <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>!" - Sarah</div>
-                <div className="bg-green-50 border border-green-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"Wait, we need the simplest ratio! It's <Latex>{"\\mathrm{MgO}"}</Latex>." - Tom</div>
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"The correct formula should be <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>!" - Sarah</div>
+                <div className="bg-green-50 border border-green-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"No! The formula should be <Latex>{"\\mathrm{MgO}"}</Latex>." - Tom</div>
               </div>
               
               <textarea 
@@ -401,7 +402,7 @@
           return (
             <div className="space-y-6 animate-fade-in">
               <div className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-2">
-                E21CC: Contextual Adaptation & Inventive Thinking
+                E21CC - The student can understand the similarities and differences between different contexts or situations and how this might affect their perspective or approach.
               </div>
               <h2 className="text-2xl font-bold text-slate-800">The "32 Oxygen" Factory Crisis</h2>
               
@@ -434,6 +435,12 @@
                   Explain what has gone wrong that led to this crisis. How would YOU write this formula so the factory AI clearly understands that the lattice requires <strong>2 whole nitrate groups</strong> for every 1 magnesium ion, and not 32 oxygens?<br/><br/>
                   <strong className="text-teal-800">Your answer should clearly explain how you are going to resolve this communication crisis!</strong>
                 </p>
+                
+                <div className="bg-teal-100/50 border border-teal-200 text-teal-800 text-sm italic px-4 py-2 rounded-lg mb-4 flex items-center gap-2">
+                  <LightbulbIcon size={16} className="text-teal-600" />
+                  <strong>Hint:</strong> How do you group objects together in Mathematics?
+                </div>
+                
                 <textarea 
                   className="w-full p-4 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 min-h-[120px]"
                   placeholder="I would write the formula as... because..."
@@ -589,8 +596,8 @@
               <div className="max-w-md mx-auto bg-slate-100 rounded-xl p-6 text-left mt-8 border border-slate-200">
                 <h3 className="font-bold text-slate-800 border-b pb-2 mb-4">Key Takeaways:</h3>
                 <ul className="space-y-3 text-slate-700">
+                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> The Group number of the element allows you to deduce its charge.</li>
                   <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Ionic lattices require the simplest whole-number ratio.</li>
-                  <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Criss-cross is a shortcut, but charge balancing is the evidence.</li>
                   <li className="flex gap-2 items-start"><CheckCircleIcon size={18} className="text-indigo-500 mt-1 shrink-0"/> Polyatomic ions require brackets when multiplied in a ratio.</li>
                 </ul>
               </div>
