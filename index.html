@@ -62,6 +62,7 @@
         const TargetIcon = (p) => <Icon {...p} path='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>' />;
         const TrashIcon = (p) => <Icon {...p} path='<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>' />;
         const LockIcon = (p) => <Icon {...p} path='<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>' />;
+        const RocketIcon = (p) => <Icon {...p} path='<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>' />;
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRO8liDHigDRzV0jpHn3c4SmDlC-l3qLc",
@@ -157,14 +158,15 @@
           };
 
           const steps = [
-            { title: "Phase 1: Periodic Table", component: <IntroScreen studentName={studentName} setStudentName={setStudentName} onNext={() => setCurrentStep(1)} /> },
-            { title: "Phase 2: Evidence & Criss-Cross", component: <CrissCrossScreen onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} /> },
-            { title: "Phase 3a: The Debate", component: <DebateInputScreen onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
-            { title: "Phase 3b: Evaluation", component: <DebateFeedbackScreen onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} /> },
-            { title: "Phase 4a: Context Shift", component: <ContextInputScreen onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(3)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
-            { title: "Phase 4b: The Convention", component: <ContextFeedbackScreen onNext={() => setCurrentStep(6)} onPrev={() => setCurrentStep(4)} /> },
-            { title: "Phase 5: Practice", component: <PracticeScreen onNext={() => setCurrentStep(7)} onPrev={() => setCurrentStep(5)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
-            { title: "Phase 6: Summary", component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} onPrev={() => setCurrentStep(6)} /> },
+            { title: "Phase 0: Mission Briefing", component: <SpaceHookScreen onNext={() => setCurrentStep(1)} /> },
+            { title: "Phase 1: Periodic Table", component: <IntroScreen studentName={studentName} setStudentName={setStudentName} onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} /> },
+            { title: "Phase 2: Evidence & Criss-Cross", component: <CrissCrossScreen onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} /> },
+            { title: "Phase 3a: The Debate", component: <DebateInputScreen onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} submitResponse={(t) => submitResponse("Phase 3: The Debate", t)} /> },
+            { title: "Phase 3b: Evaluation", component: <DebateFeedbackScreen onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(4)} /> },
+            { title: "Phase 4a: Context Shift", component: <ContextInputScreen onNext={() => setCurrentStep(6)} onPrev={() => setCurrentStep(4)} submitResponse={(t) => submitResponse("Phase 4: Polyatomic Context", t)} /> },
+            { title: "Phase 4b: The Convention", component: <ContextFeedbackScreen onNext={() => setCurrentStep(7)} onPrev={() => setCurrentStep(6)} /> },
+            { title: "Phase 5: Practice", component: <PracticeScreen onNext={() => setCurrentStep(8)} onPrev={() => setCurrentStep(6)} submitResponse={(t) => submitResponse("Phase 5: Practice Quiz", t)} /> }, 
+            { title: "Phase 6: Summary", component: <SummaryScreen onReset={() => {setCurrentStep(0); setStudentName("");}} onPrev={() => setCurrentStep(7)} /> },
           ];
 
           if (showTeacherView) return <TeacherDashboard onClose={() => setShowTeacherView(false)} user={user} />;
@@ -193,7 +195,56 @@
           );
         }
 
-        function IntroScreen({ studentName, setStudentName, onNext }) {
+        // --- NEW PHASE 0: SPACE HOOK SCREEN ---
+        function SpaceHookScreen({ onNext }) {
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <div className="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-2">
+                E21CC - Real World Application
+              </div>
+              <h2 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3">
+                <RocketIcon size={32} className="text-indigo-600"/> 
+                Mission Artemis: The Chemistry of Survival
+              </h2>
+              
+              <div className="relative rounded-2xl overflow-hidden shadow-lg h-64 border border-slate-200 bg-slate-900">
+                <img src="https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=1200&q=80" alt="Space Shuttle lifting off" className="w-full h-full object-cover opacity-80 mix-blend-screen" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent flex items-end p-6">
+                    <p className="text-white text-lg font-medium drop-shadow-md">
+                      As humanity prepares for <strong>Artemis II</strong>, returning astronauts to lunar orbit, survival in the harsh vacuum of space depends entirely on mastering chemical formulae.
+                    </p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 mt-6">
+                <div className="bg-slate-800 text-white p-6 rounded-xl shadow-md border border-slate-700 hover:border-blue-400 transition-colors">
+                  <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-blue-300"><TargetIcon size={20}/> The Air Scrubber</h3>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Astronauts exhale toxic carbon dioxide. To prevent suffocation, life support systems use <strong>Lithium Hydroxide (<Latex>{"\\mathrm{LiOH}"}</Latex>)</strong> to chemically absorb the <Latex>{"\\mathrm{CO_2}"}</Latex> from the cabin air. Getting this formula wrong means mission failure.
+                  </p>
+                </div>
+                <div className="bg-slate-800 text-white p-6 rounded-xl shadow-md border border-slate-700 hover:border-yellow-400 transition-colors">
+                  <h3 className="text-xl font-bold mb-3 flex items-center gap-2 text-yellow-300"><LightbulbIcon size={20}/> Advanced Sensors</h3>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Spacecraft rely on highly specialized optical equipment and cathode sensors. <strong>Barium Oxide (<Latex>{"\\mathrm{BaO}"}</Latex>)</strong> is a critical compound used in the manufacturing of these systems to ensure deep-space communication.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-indigo-50 border border-indigo-200 p-5 rounded-xl mt-6 text-indigo-900 shadow-sm">
+                <p><strong>Your Mission:</strong> Before you can engineer these life-saving compounds, you must understand the mathematical rules that govern how atoms bond. Are you ready to decode the universe?</p>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button onClick={onNext} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 shadow-md transition-transform active:scale-95">
+                  Initiate Training <ArrowRightIcon size={20} />
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        function IntroScreen({ studentName, setStudentName, onNext, onPrev }) {
           return (
             <div className="space-y-6 animate-fade-in">
               <div className="flex items-center gap-3 text-indigo-600"><BookOpenIcon size={32} /><h2 className="text-3xl font-extrabold text-slate-800">Charges from the Periodic Table</h2></div>
@@ -246,16 +297,17 @@
                   onChange={(e) => setStudentName(e.target.value)} 
                 />
               </div>
-              <div className="flex justify-end pt-4">
-                <button onClick={onNext} disabled={!studentName.trim()} className={`font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-all ${studentName.trim() ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transform hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Start Detective Work <ArrowRightIcon size={20} /></button>
+              <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
+                <button onClick={onPrev} className="bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors font-semibold py-2 px-6 rounded-lg flex items-center gap-2"><ArrowLeftIcon size={20} /> Back to Briefing</button>
+                <button onClick={onNext} disabled={!studentName.trim()} className={`font-semibold py-2 px-6 rounded-lg flex items-center gap-2 transition-all ${studentName.trim() ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transform hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Start Detective Work <ArrowRightIcon size={20} /></button>
               </div>
             </div>
           );
         }
 
         function CrissCrossScreen({ onNext, onPrev }) {
-          const [catIdx, setCatIdx] = useState(0);
-          const [anIdx, setAnIdx] = useState(0);
+          const [catIdx, setCatIdx] = useState(0); // Starts at Na
+          const [anIdx, setAnIdx] = useState(0); // Starts at Cl
           const [crossStep, setCrossStep] = useState(0);
           
           const cation = CATIONS[catIdx];
@@ -320,16 +372,16 @@
               <div className="bg-purple-100 text-purple-900 text-sm font-bold px-4 py-3 rounded-xl border border-purple-200 shadow-sm leading-relaxed">
                 E21CC: The student can use evidence and adopt different viewpoints to explain their reasoning and decisions.
               </div>
-              <h2 className="text-2xl font-bold text-slate-800">The Chemist's Debate: Magnesium Oxide</h2>
+              <h2 className="text-2xl font-bold text-slate-800">The Chemist's Debate: Barium Oxide</h2>
               
               <div className="bg-indigo-50 p-5 rounded-xl border border-indigo-100 text-indigo-900 shadow-sm">
-                <p>You are presented with The Chemist's Debate, where two students, Sarah and Tom, are arguing what the correct formula for Magnesium Oxide is. Their perspectives are shown below.</p>
+                <p>You are presented with The Chemist's Debate, where two engineers, Sarah and Tom, are arguing what the correct formula for the spacecraft material Barium Oxide is. Their perspectives are shown below.</p>
                 <p className="mt-2 font-bold">Evaluate each of their perspectives, stating clearly what is correct or incorrect about each of their ideas.</p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 mt-2">
-                <div className="bg-red-50 border border-red-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"The correct formula should be <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>!" - Sarah</div>
-                <div className="bg-green-50 border border-green-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"No! The formula should be <Latex>{"\\mathrm{MgO}"}</Latex>." - Tom</div>
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"<Latex>{"\\mathrm{Ba}"}</Latex> has a valency of 2, and <Latex>{"\\mathrm{O}"}</Latex> has a valency of 2, so the formula is <Latex>{"\\mathrm{Ba_2O_2}"}</Latex>!" - Sarah</div>
+                <div className="bg-green-50 border border-green-200 p-4 rounded-xl italic text-slate-700 shadow-sm">"No! The formula should be <Latex>{"\\mathrm{BaO}"}</Latex>." - Tom</div>
               </div>
               
               <textarea 
@@ -372,10 +424,10 @@
               <div className="bg-green-50 border border-green-200 p-8 rounded-xl shadow-sm">
                 <h4 className="font-bold flex items-center gap-2 mb-4 text-green-800 border-b border-green-200 pb-2"><CheckCircleIcon size={24}/> Teacher's Final Evaluation</h4>
                 <p className="text-slate-800 text-lg mb-4 leading-relaxed">
-                  <strong>Tom is correct.</strong> Ionic compounds form giant lattice structures, so their chemical formulae must represent the simplest whole-number ratio of ions. Just like how you simplify a ratio of 2:2 to 1:1 in mathematics, the ratio of Magnesium to Oxide ions must be simplified to 1:1, giving <strong className="text-indigo-700"><Latex>{"\\mathrm{MgO}"}</Latex></strong>.
+                  <strong>Tom is correct.</strong> Ionic compounds form giant lattice structures, so their chemical formulae must represent the simplest whole-number ratio of ions. Just like how you simplify a ratio of 2:2 to 1:1 in mathematics, the ratio of Barium to Oxide ions must be simplified to 1:1, giving <strong className="text-indigo-700"><Latex>{"\\mathrm{BaO}"}</Latex></strong>.
                 </p>
                 <p className="text-slate-800 text-lg leading-relaxed">
-                  <strong>Why Sarah is wrong:</strong> Sarah treated the criss-cross method as an unbreakable rule rather than a mathematical shortcut. By blindly crossing the 2s and leaving it as <Latex>{"\\mathrm{Mg_2O_2}"}</Latex>, she failed to reduce the formula to its simplest empirical ratio.
+                  <strong>Why Sarah is wrong:</strong> Sarah treated the criss-cross method as an unbreakable rule rather than a mathematical shortcut. By blindly crossing the 2s and leaving it as <Latex>{"\\mathrm{Ba_2O_2}"}</Latex>, she failed to reduce the formula to its simplest empirical ratio.
                 </p>
               </div>
               <div className="flex justify-between pt-8 border-t mt-8 border-slate-200">
@@ -386,16 +438,19 @@
           );
         }
 
+        // --- UPDATED PHASE 4A: MULTIPLE CHOICE + JUSTIFICATION (MgN2O6 Distractor) ---
         function ContextInputScreen({ onNext, onPrev, submitResponse }) {
           const [response, setResponse] = useState("");
+          const [selectedOption, setSelectedOption] = useState(null);
           const [submitted, setSubmitted] = useState(false);
           
-          const canSubmit = response.trim().length >= 50;
+          const canSubmit = selectedOption !== null && response.trim().length >= 50;
           
           const executeSubmit = () => {
               if (canSubmit) {
                   setSubmitted(true);
-                  submitResponse(response);
+                  const optionLabels = ["MgNO32", "MgN2O6", "Mg(NO3)2"];
+                  submitResponse(`Selected: ${optionLabels[selectedOption]}\nReasoning: ${response}`);
               }
           };
 
@@ -407,43 +462,53 @@
               <h2 className="text-2xl font-bold text-slate-800">The "32 Oxygen" Factory Crisis</h2>
               
               <p className="text-slate-600">
-                You are the head chemist programming an automated chemical mixer at a plant. A new worker was asked to input the formula for a lattice containing Magnesium (<Latex>{"\\mathrm{Mg}^{2+}"}</Latex>) and Nitrate (<Latex>{"\\mathrm{NO_3}^-"}</Latex>) ions into the system. 
+                You are the head chemist programming an automated chemical mixer at a plant. The system needs the formula for a lattice containing Magnesium (<Latex>{"\\mathrm{Mg}^{2+}"}</Latex>) and Nitrate (<Latex>{"\\mathrm{NO_3}^-"}</Latex>) ions. 
               </p>
               
               <div className="bg-rose-50 border border-rose-200 p-6 rounded-xl my-6">
                  <h3 className="font-bold text-rose-800 flex items-center gap-2 mb-3">
                   <ShieldAlertIcon size={20} className="text-rose-600" /> 
-                  The Worker's Mistake
+                  The System Diagnostic
                 </h3>
                 <p className="text-rose-900 mb-4">
-                  The worker applied the standard criss-cross rule. Since Nitrate has a valency of 1 and Magnesium has a valency of 2, the worker just tacked the '2' onto the end of the Nitrate symbol. 
+                  The AI mixer is confused by the polyatomic Nitrate group. It has generated three possible interpretations for the 1:2 ratio. You must select the correct one and justify your choice to override the system error.
                 </p>
-                <div className="bg-white p-4 rounded-lg text-center border border-rose-100 shadow-sm">
-                    <span className="text-slate-500 text-sm block mb-1">What the worker programmed:</span>
-                    <span className="text-4xl font-bold text-red-600 line-through"><Latex>{"\\mathrm{MgNO_{32}}"}</Latex></span>
-                    <p className="mt-3 text-rose-800 font-medium italic">"Boss, the mixer's AI just halted production! It thinks we need a lattice ratio of 1 Magnesium to 1 Nitrogen and THIRTY-TWO Oxygens! What went wrong?!"</p>
+                
+                <div className="grid md:grid-cols-3 gap-4">
+                   {[
+                     { id: 0, latex: "\\mathrm{MgNO_{32}}" },
+                     { id: 1, latex: "\\mathrm{MgN_2O_6}" },
+                     { id: 2, latex: "\\mathrm{Mg(NO_3)_2}" }
+                   ].map(opt => (
+                      <button 
+                        key={opt.id}
+                        onClick={() => !submitted && setSelectedOption(opt.id)}
+                        className={`p-4 rounded-lg border-2 text-center transition-all ${selectedOption === opt.id ? 'border-indigo-500 bg-indigo-50 shadow-md scale-105' : 'border-slate-200 bg-white hover:border-indigo-300'} ${submitted && selectedOption !== opt.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={submitted}
+                      >
+                        <span className="text-3xl font-bold text-slate-800 block"><Latex>{opt.latex}</Latex></span>
+                      </button>
+                   ))}
                 </div>
               </div>
 
               <div className="bg-teal-50 border border-teal-200 p-6 rounded-xl">
                 <h3 className="font-bold text-teal-800 flex items-center gap-2 mb-3">
                   <LightbulbIcon size={20} className="text-teal-600" /> 
-                  Invent a Solution
+                  Justify Your Selection
                 </h3>
                 <p className="text-sm text-teal-900 mb-4 leading-relaxed">
-                  The context has changed from single atoms (like <Latex>{"\\mathrm{Cl}^-"}</Latex>) to a <strong>polyatomic group</strong> (<Latex>{"\\mathrm{NO_3}^-"}</Latex>). <br/><br/>
-                  Explain what has gone wrong that led to this crisis. How would YOU write this formula so the factory AI clearly understands that the lattice requires <strong>2 whole nitrate groups</strong> for every 1 magnesium ion, and not 32 oxygens?<br/><br/>
-                  <strong className="text-teal-800">Your answer should clearly explain how you are going to resolve this communication crisis!</strong>
+                  Why is your chosen formula the ONLY mathematically correct way to tell the factory AI that the lattice requires <strong>2 whole nitrate groups</strong> for every 1 magnesium ion? Defend your choice against the other incorrect options.<br/><br/>
                 </p>
                 
-                <div className="bg-teal-100/50 border border-teal-200 text-teal-800 text-sm italic px-4 py-2 rounded-lg mb-4 flex items-center gap-2">
-                  <LightbulbIcon size={16} className="text-teal-600" />
-                  <strong>Hint:</strong> How do you group objects together in Mathematics?
+                <div className="bg-teal-100/50 border border-teal-200 text-teal-800 text-sm italic px-4 py-2 rounded-lg mb-4 flex items-center gap-2 shadow-sm">
+                  <LightbulbIcon size={16} className="text-teal-600 shrink-0" />
+                  <span><strong>Hint:</strong> How do you group objects together in Mathematics to multiply the whole group?</span>
                 </div>
                 
                 <textarea 
                   className="w-full p-4 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 min-h-[120px]"
-                  placeholder="I would write the formula as... because..."
+                  placeholder="I selected this formula because..."
                   value={response}
                   onChange={(e) => setResponse(e.target.value)}
                   disabled={submitted}
@@ -456,14 +521,15 @@
                           className={`px-6 py-2 rounded-lg font-semibold transition-all w-full sm:w-auto flex items-center justify-center ${canSubmit ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} 
                           disabled={!canSubmit}
                       >
-                          Submit Invention
+                          Submit Justification
                       </button>
-                      {!canSubmit && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Elaborate a bit more! (Min 50 chars - Currently {response.trim().length}/50)</span>}
+                      {selectedOption === null && <span className="text-sm text-rose-500 font-medium animate-pulse">Please select a formula first!</span>}
+                      {selectedOption !== null && response.length < 50 && response.length > 0 && <span className="text-sm text-rose-500 font-medium animate-pulse">Elaborate a bit more! (Min 50 chars - Currently {response.trim().length}/50)</span>}
                   </div>
                 ) : (
                   <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg text-sm text-emerald-900 animate-fade-in shadow-sm flex items-center gap-3 mt-4">
                     <CheckCircleIcon size={24} className="text-emerald-600 shrink-0"/>
-                    <p><strong>Solution logged securely!</strong> Hang tight. Wait for your teacher's instruction before you reveal the official convention.</p>
+                    <p><strong>Selection & Justification logged securely!</strong> Hang tight. Wait for your teacher's instruction before you reveal the official convention.</p>
                   </div>
                 )}
               </div>
@@ -483,10 +549,10 @@
               <div className="bg-white border border-teal-200 p-8 rounded-xl shadow-sm">
                 <h4 className="font-bold text-teal-800 flex items-center gap-2 mb-4 border-b border-teal-100 pb-2"><CheckCircleIcon size={24}/> The Official Convention</h4>
                 <p className="text-slate-700 text-lg mb-4 leading-relaxed">
-                  Brilliant problem solving! Did you suggest circling the Nitrate? Using hyphens? Using different colors?
+                  If you selected <strong className="text-indigo-600"><Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></strong>, you are thinking like a master chemist!
                 </p>
                 <p className="text-slate-700 text-lg leading-relaxed">
-                  Chemists faced this exact same crisis! Because the context shifted to a group of atoms acting together, they had to invent a new syntax to show the correct ratio. They decided to use <strong>brackets</strong> to show that the subscript applies to everything inside the polyatomic group.
+                  When chemists faced the crisis of polyatomic groups, they needed a new syntax to show the correct ratio without causing confusion (like accidentally demanding 32 oxygens). Just like in mathematics, they decided to use <strong>brackets</strong> to show that the subscript outside applies to <em>everything</em> inside the polyatomic group.
                 </p>
                 <div className="text-center mt-8 p-6 bg-slate-100 rounded-xl border border-slate-300 shadow-inner">
                    <span className="text-5xl font-bold text-indigo-600"><Latex>{"\\mathrm{Mg(NO_3)_2}"}</Latex></span>
